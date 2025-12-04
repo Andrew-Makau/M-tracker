@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../theme/app_theme.dart';
+
 /// Pressable
 /// Wraps [InkWell] (or [GestureDetector]) to provide consistent
 /// ripple, padding, and haptic feedback across the app.
@@ -42,7 +44,7 @@ class Pressable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final br = borderRadius ?? BorderRadius.circular(8);
+    final br = borderRadius ?? BorderRadius.circular(12);
 
     return Material(
       color: Colors.transparent,
@@ -56,7 +58,7 @@ class Pressable extends StatelessWidget {
         onTapUp: onTapUp,
         onTapCancel: onTapCancel,
         child: Padding(
-          padding: padding ?? EdgeInsets.zero,
+          padding: padding ?? EdgeInsets.all(AppTheme.spacingSmall),
           child: child,
         ),
       ),

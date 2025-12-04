@@ -55,6 +55,30 @@ class AppTheme {
   static const Color shadowDark =
       Color(0x1F000000); // Subtle shadow for dark mode
 
+  // Spacing tokens (mobile-first)
+  static const double spacingExtraSmall = 4.0;
+  static const double spacingSmall = 8.0;
+  static const double spacingMedium = 16.0;
+  static const double spacingLarge = 24.0;
+  static const double spacingExtraLarge = 32.0;
+
+  // Category color palette (use for charts and category chips)
+  static const List<Color> categoryColors = [
+    Color(0xFF34D399), // green
+    Color(0xFFF59E0B), // amber
+    Color(0xFF60A5FA), // blue
+    Color(0xFFF472B6), // pink
+    Color(0xFFFB7185), // rose
+    Color(0xFF8B5CF6), // purple
+    Color(0xFFF97316), // orange
+  ];
+
+  // Helper to scale fonts with MediaQuery.textScaleFactor where needed.
+  static double responsiveFontSize(BuildContext context, double size) {
+    final scale = MediaQuery.textScaleFactorOf(context);
+    return size * scale;
+  }
+
   /// Light theme - Contemporary Financial Minimalism
   static ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,

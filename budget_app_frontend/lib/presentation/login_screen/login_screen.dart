@@ -306,7 +306,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   style: AppTheme
                                       .lightTheme.textTheme.headlineMedium
                                       ?.copyWith(
-                                    color: Colors.white,
+                                    color: Theme.of(context).colorScheme.onPrimary,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -315,7 +315,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   'Sign in to continue managing your budget',
                                   style: AppTheme.lightTheme.textTheme.bodyLarge
                                       ?.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.8),
+                                    color: Theme.of(context).colorScheme.onPrimary.withAlpha(204),
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -343,7 +343,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   style: AppTheme
                                       .lightTheme.textTheme.bodyMedium
                                       ?.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.7),
+                                    color: Theme.of(context).colorScheme.onPrimary.withAlpha(178),
                                   ),
                                 ),
                               ],
@@ -361,9 +361,9 @@ class _LoginScreenState extends State<LoginScreen>
                             child: Row(
                               children: [
                                 Expanded(
-                                  child: Container(
+                                    child: Container(
                                     height: 1,
-                                    color: Colors.white.withValues(alpha: 0.3),
+                                    color: Theme.of(context).colorScheme.onPrimary.withAlpha(77),
                                   ),
                                 ),
                                 Padding(
@@ -374,8 +374,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     style: AppTheme
                                         .lightTheme.textTheme.bodyMedium
                                         ?.copyWith(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.7),
+                                      color: Theme.of(context).colorScheme.onPrimary.withAlpha(178),
                                     ),
                                   ),
                                 ),
@@ -459,19 +458,19 @@ class _LoginScreenState extends State<LoginScreen>
                                             fillColor:
                                                 WidgetStateProperty.resolveWith((states) {
                                               if (states.contains(WidgetState.selected)) {
-                                                return Colors.white;
+                                                return Theme.of(context).colorScheme.onPrimary;
                                               }
                                               return Colors.transparent;
                                             }),
                                             checkColor: AppTheme.lightTheme.colorScheme.primary,
-                                            side: const BorderSide(color: Colors.white, width: 2),
+                                            side: BorderSide(color: Theme.of(context).colorScheme.onPrimary, width: 2),
                                           ),
                                           Flexible(
                                             child: Text(
                                               'Remember me',
                                               overflow: TextOverflow.ellipsis,
                                               style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                                                color: Colors.white.withValues(alpha: 0.8),
+                                                color: Theme.of(context).colorScheme.onPrimary.withAlpha(204),
                                               ),
                                             ),
                                           ),
@@ -485,13 +484,13 @@ class _LoginScreenState extends State<LoginScreen>
                                             // Navigate to forgot password screen
                                           },
                                           child: Text(
-                                            'Forgot Password?',
-                                            overflow: TextOverflow.ellipsis,
-                                            style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w600,
+                                              'Forgot Password?',
+                                              overflow: TextOverflow.ellipsis,
+                                              style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+                                                color: Theme.of(context).colorScheme.onPrimary,
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                             ),
-                                          ),
                                         ),
                                       ),
                                     ],
@@ -514,12 +513,12 @@ class _LoginScreenState extends State<LoginScreen>
                                             fillColor:
                                                 WidgetStateProperty.resolveWith((states) {
                                               if (states.contains(WidgetState.selected)) {
-                                                return Colors.white;
+                                                return Theme.of(context).colorScheme.onPrimary;
                                               }
                                               return Colors.transparent;
                                             }),
                                             checkColor: AppTheme.lightTheme.colorScheme.primary,
-                                            side: const BorderSide(color: Colors.white, width: 2),
+                                            side: BorderSide(color: Theme.of(context).colorScheme.onPrimary, width: 2),
                                           ),
                                           Flexible(
                                             child: Text(
@@ -538,11 +537,11 @@ class _LoginScreenState extends State<LoginScreen>
                                         HapticFeedback.lightImpact();
                                         // Navigate to forgot password screen
                                       },
-                                      child: Text(
+                                        child: Text(
                                         'Forgot Password?',
                                         overflow: TextOverflow.ellipsis,
                                         style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                                          color: Colors.white,
+                                          color: Theme.of(context).colorScheme.onPrimary,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -582,8 +581,8 @@ class _LoginScreenState extends State<LoginScreen>
                                 SocialLoginButton(
                                   text: 'Continue with Google',
                                   iconName: 'g_translate',
-                                  backgroundColor: Colors.white,
-                                  textColor: Colors.black87,
+                                  backgroundColor: Theme.of(context).colorScheme.onPrimary,
+                                  textColor: Theme.of(context).colorScheme.onPrimary == Colors.white ? Colors.black87 : Colors.black87,
                                   onPressed: () => _handleSocialLogin('google'),
                                   isLoading: _isGoogleLoading,
                                 ),
@@ -591,7 +590,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   text: 'Continue with Apple',
                                   iconName: 'apple',
                                   backgroundColor: Colors.black,
-                                  textColor: Colors.white,
+                                  textColor: Theme.of(context).colorScheme.onPrimary,
                                   onPressed: () => _handleSocialLogin('apple'),
                                   isLoading: _isAppleLoading,
                                 ),
@@ -599,7 +598,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   text: 'Continue with Facebook',
                                   iconName: 'facebook',
                                   backgroundColor: const Color(0xFF1877F2),
-                                  textColor: Colors.white,
+                                  textColor: Theme.of(context).colorScheme.onPrimary,
                                   onPressed: () =>
                                       _handleSocialLogin('facebook'),
                                   isLoading: _isFacebookLoading,
@@ -624,7 +623,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   style: AppTheme
                                       .lightTheme.textTheme.bodyMedium
                                       ?.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.7),
+                                    color: Theme.of(context).colorScheme.onPrimary.withAlpha(178),
                                   ),
                                 ),
                                 TextButton(
@@ -632,15 +631,15 @@ class _LoginScreenState extends State<LoginScreen>
                                     HapticFeedback.lightImpact();
                                     Navigator.pushNamed(context, '/signup-screen');
                                   },
-                                  child: Text(
+                                    child: Text(
                                     'Create Account',
                                     style: AppTheme
                                         .lightTheme.textTheme.bodyMedium
                                         ?.copyWith(
-                                      color: Colors.white,
+                                      color: Theme.of(context).colorScheme.onPrimary,
                                       fontWeight: FontWeight.w600,
                                       decoration: TextDecoration.underline,
-                                      decorationColor: Colors.white,
+                                      decorationColor: Theme.of(context).colorScheme.onPrimary,
                                     ),
                                   ),
                                 ),

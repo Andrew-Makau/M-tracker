@@ -41,27 +41,27 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
     {
       "name": "Food & Dining",
       "amount": 687.50,
-      "color": Colors.orange.shade400,
+      "color": AppTheme.categoryColors[6],
     },
     {
       "name": "Transportation",
       "amount": 425.80,
-      "color": Colors.blue.shade400,
+      "color": AppTheme.categoryColors[2],
     },
     {
       "name": "Shopping",
       "amount": 312.45,
-      "color": Colors.purple.shade400,
+      "color": AppTheme.categoryColors[5],
     },
     {
       "name": "Entertainment",
       "amount": 234.67,
-      "color": Colors.green.shade400,
+      "color": AppTheme.categoryColors[0],
     },
     {
       "name": "Bills & Utilities",
       "amount": 186.90,
-      "color": Colors.red.shade400,
+      "color": AppTheme.categoryColors[4],
     },
   ];
 
@@ -74,7 +74,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
       "amount": 12.50,
       "date": DateTime.now().subtract(const Duration(hours: 2)),
       "type": "expense",
-      "categoryColor": Colors.orange.shade400,
+      "categoryColor": AppTheme.categoryColors[6],
     },
     {
       "id": 2,
@@ -83,7 +83,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
       "amount": 18.75,
       "date": DateTime.now().subtract(const Duration(hours: 5)),
       "type": "expense",
-      "categoryColor": Colors.blue.shade400,
+      "categoryColor": AppTheme.categoryColors[2],
     },
     {
       "id": 3,
@@ -92,7 +92,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
       "amount": 2500.00,
       "date": DateTime.now().subtract(const Duration(days: 1)),
       "type": "income",
-      "categoryColor": Colors.green.shade400,
+      "categoryColor": AppTheme.categoryColors[0],
     },
     {
       "id": 4,
@@ -101,7 +101,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
       "amount": 89.99,
       "date": DateTime.now().subtract(const Duration(days: 2)),
       "type": "expense",
-      "categoryColor": Colors.purple.shade400,
+      "categoryColor": AppTheme.categoryColors[5],
     },
     {
       "id": 5,
@@ -110,7 +110,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
       "amount": 15.99,
       "date": DateTime.now().subtract(const Duration(days: 3)),
       "type": "expense",
-      "categoryColor": Colors.red.shade400,
+      "categoryColor": AppTheme.categoryColors[4],
     },
   ];
 
@@ -193,8 +193,8 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
       msg: _useLiveData ? "Live data updated" : "Data updated",
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
-      backgroundColor: Colors.green.shade600,
-      textColor: Colors.white,
+      backgroundColor: AppTheme.successLight,
+      textColor: Theme.of(context).colorScheme.onPrimary,
     );
   }
 
@@ -293,8 +293,8 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
                 msg: "Transaction deleted",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
-                backgroundColor: Colors.red.shade600,
-                textColor: Colors.white,
+                backgroundColor: AppTheme.errorLight,
+                textColor: Theme.of(context).colorScheme.onPrimary,
               );
             },
             child: Text('Delete', style: TextStyle(color: Colors.red)),
@@ -386,7 +386,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
                 color: AppTheme.lightTheme.cardColor,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: AppTheme.shadowLight,
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -466,11 +466,10 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
                         gravity: ToastGravity.BOTTOM,
                       );
                     },
-                    child: Container(
+                        child: Container(
                       padding: EdgeInsets.all(3.w),
                       decoration: BoxDecoration(
-                        color: AppTheme.lightTheme.primaryColor
-                            .withValues(alpha: 0.1),
+                        color: Theme.of(context).colorScheme.primary.withAlpha(26),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Stack(
@@ -483,11 +482,11 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
                           Positioned(
                             right: 0,
                             top: 0,
-                            child: Container(
+                              child: Container(
                               width: 2.w,
                               height: 2.w,
                               decoration: BoxDecoration(
-                                color: Colors.red.shade400,
+                                color: AppTheme.errorLight,
                                 borderRadius: BorderRadius.circular(1.w),
                               ),
                             ),
@@ -566,7 +565,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
                               final amt = (tx['amount'] is num) ? (tx['amount'] as num).toDouble() : 0.0;
                               final type = (tx['type'] ?? 'expense').toString().toLowerCase();
                               final catName = (tx['category'] ?? 'Uncategorized').toString();
-                              final catColor = (tx['categoryColor'] is Color) ? tx['categoryColor'] as Color : Colors.grey.shade400;
+                              final catColor = (tx['categoryColor'] is Color) ? tx['categoryColor'] as Color : Theme.of(context).dividerColor;
 
                               if (type == 'expense') {
                                 spent += amt;
@@ -581,7 +580,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
                               return {
                                 'name': e.key,
                                 'amount': e.value,
-                                'color': catColors[e.key] ?? Colors.grey.shade400,
+                                'color': catColors[e.key] ?? Theme.of(context).dividerColor,
                               };
                             }).toList()
                               ..sort((a, b) => (b['amount'] as double).compareTo(a['amount'] as double));
@@ -593,7 +592,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
                               final amt = (tx['amount'] is num) ? (tx['amount'] as num).toDouble() : 0.0;
                               final type = (tx['type'] ?? 'expense').toString().toLowerCase();
                               final catName = (tx['category'] ?? 'Uncategorized').toString();
-                              final catColor = (tx['categoryColor'] is Color) ? tx['categoryColor'] as Color : Colors.grey.shade400;
+                              final catColor = (tx['categoryColor'] is Color) ? tx['categoryColor'] as Color : Theme.of(context).dividerColor;
                               if (type == 'expense') {
                                 localCatSums[catName] = (localCatSums[catName] ?? 0.0) + amt;
                                 localCatColors[catName] = catColor;
@@ -603,7 +602,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
                               return {
                                 'name': e.key,
                                 'amount': e.value,
-                                'color': localCatColors[e.key] ?? Colors.grey.shade400,
+                                'color': localCatColors[e.key] ?? Theme.of(context).dividerColor,
                               };
                             }).toList()
                               ..sort((a, b) => (b['amount'] as double).compareTo(a['amount'] as double));
@@ -648,10 +647,10 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
+                color: AppTheme.shadowLight,
+                blurRadius: 20,
+                offset: const Offset(0, -5),
+              ),
           ],
         ),
         child: BottomNavigationBar(
@@ -741,7 +740,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
       floatingActionButton: FloatingActionButton(
         onPressed: _handleAddExpense,
         backgroundColor: AppTheme.lightTheme.primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         elevation: 8,
         child: AnimatedBuilder(
           animation: _refreshAnimation,
@@ -750,7 +749,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
               angle: _refreshAnimation.value * 2 * 3.14159,
               child: CustomIconWidget(
                 iconName: _isRefreshing ? 'refresh' : 'add',
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onPrimary,
                 size: 28,
               ),
             );

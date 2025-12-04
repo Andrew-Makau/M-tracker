@@ -88,13 +88,12 @@ class _SocialLoginButtonState extends State<SocialLoginButton>
                 color: widget.backgroundColor,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: AppTheme.lightTheme.colorScheme.outline
-                      .withValues(alpha: 0.3),
+                  color: Theme.of(context).colorScheme.outline.withAlpha(77),
                   width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: widget.backgroundColor.withValues(alpha: 0.2),
+                    color: widget.backgroundColor.withAlpha(51),
                     blurRadius: _isPressed ? 4 : 8,
                     offset: Offset(0, _isPressed ? 2 : 4),
                   ),

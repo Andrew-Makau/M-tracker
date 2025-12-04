@@ -6,6 +6,7 @@ class CustomImageWidget extends StatelessWidget {
   final double width;
   final double height;
   final BoxFit fit;
+  final String? semanticLabel;
 
   /// Optional widget to show when the image fails to load.
   /// If null, a default asset image is shown.
@@ -18,6 +19,7 @@ class CustomImageWidget extends StatelessWidget {
     this.height = 60,
     this.fit = BoxFit.cover,
     this.errorWidget,
+    this.semanticLabel,
   });
 
   @override
@@ -29,7 +31,16 @@ class CustomImageWidget extends StatelessWidget {
       height: height,
       fit: fit,
 
-      // Use caller-supplied widget if provided, else fallback asset.
+      // Build the final image so we can attach semantics/alt text.
+      imageBuilder: (context, imageProvider) => Image(
+        image: imageProvider,
+        width: width,
+        height: height,
+        fit: fit,
+        semanticLabel: semanticLabel,
+      ),
+
+      // Use caller-supplied widget if provided, else fallback asset (with semantics).
       errorWidget: (context, url, error) =>
           errorWidget ??
           Image.asset(
@@ -37,6 +48,7 @@ class CustomImageWidget extends StatelessWidget {
             fit: fit,
             width: width,
             height: height,
+            semanticLabel: semanticLabel ?? 'image',
           ),
 
       placeholder: (context, url) => Container(

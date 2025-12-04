@@ -94,12 +94,10 @@ class _MyAppState extends State<MyApp> {
         themeMode: ThemeMode.light,
         // Apply saved text scale factor here (from SettingsService)
         builder: (context, child) {
+          // Use the supported textScaleFactor field on MediaQueryData
+          final mq = MediaQuery.of(context);
           return MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              // ensure the app uses the user's chosen text scale
-              // ignore: deprecated_member_use
-              textScaler: TextScaler.linear(scale),
-            ),
+            data: mq.copyWith(textScaleFactor: scale),
             child: child!,
           );
         },

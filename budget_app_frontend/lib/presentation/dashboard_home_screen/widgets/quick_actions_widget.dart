@@ -28,7 +28,7 @@ class QuickActionsWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: AppTheme.shadowLight,
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -52,7 +52,7 @@ class QuickActionsWidget extends StatelessWidget {
                   context: context,
                   icon: 'remove',
                   label: 'Add Expense',
-                  color: Colors.red.shade400,
+                  color: AppTheme.errorLight,
                   onTap: onAddExpense,
                 ),
               ),
@@ -62,7 +62,7 @@ class QuickActionsWidget extends StatelessWidget {
                   context: context,
                   icon: 'add',
                   label: 'Add Income',
-                  color: Colors.green.shade400,
+                  color: AppTheme.successLight,
                   onTap: onAddIncome,
                 ),
               ),
@@ -76,7 +76,7 @@ class QuickActionsWidget extends StatelessWidget {
                   context: context,
                   icon: 'pie_chart',
                   label: 'Budgets',
-                  color: Colors.blue.shade400,
+                  color: AppTheme.categoryColors[2],
                   onTap: onViewBudgets,
                 ),
               ),
@@ -86,7 +86,7 @@ class QuickActionsWidget extends StatelessWidget {
                   context: context,
                   icon: 'bar_chart',
                   label: 'Reports',
-                  color: Colors.purple.shade400,
+                  color: AppTheme.categoryColors[5],
                   onTap: onViewReports,
                 ),
               ),
@@ -106,13 +106,13 @@ class QuickActionsWidget extends StatelessWidget {
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+        child: Container(
         padding: EdgeInsets.symmetric(vertical: 4.h, horizontal: 4.w),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: color.withAlpha(26),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: color.withValues(alpha: 0.3),
+            color: color.withAlpha(77),
             width: 1,
           ),
         ),
@@ -127,7 +127,7 @@ class QuickActionsWidget extends StatelessWidget {
               ),
               child: CustomIconWidget(
                 iconName: icon,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onPrimary,
                 size: 24,
               ),
             ),

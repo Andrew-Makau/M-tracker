@@ -95,24 +95,20 @@ class _PrimaryButtonState extends State<PrimaryButton>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: widget.isEnabled
-                      ? [
-                          AppTheme.lightTheme.colorScheme.primary,
-                          AppTheme.lightTheme.colorScheme.primary
-                              .withValues(alpha: 0.8),
-                        ]
-                      : [
-                          AppTheme.lightTheme.colorScheme.onSurfaceVariant
-                              .withValues(alpha: 0.3),
-                          AppTheme.lightTheme.colorScheme.onSurfaceVariant
-                              .withValues(alpha: 0.2),
-                        ],
+                        ? [
+                            Theme.of(context).colorScheme.primary,
+                            Theme.of(context).colorScheme.primary.withAlpha(204),
+                          ]
+                        : [
+                            Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(77),
+                            Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(51),
+                          ],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: widget.isEnabled && !_isPressed
                     ? [
                         BoxShadow(
-                          color: AppTheme.lightTheme.colorScheme.primary
-                              .withValues(alpha: 0.3),
+                          color: AppTheme.shadowLight,
                           blurRadius: 12,
                           offset: const Offset(0, 6),
                         ),
@@ -132,9 +128,9 @@ class _PrimaryButtonState extends State<PrimaryButton>
                                   -1.0 + _shimmerAnimation.value, 0.0),
                               end:
                                   Alignment(1.0 + _shimmerAnimation.value, 0.0),
-                              colors: [
+                                colors: [
                                 Colors.transparent,
-                                Colors.white.withValues(alpha: 0.1),
+                                Theme.of(context).colorScheme.onPrimary.withAlpha(26),
                                 Colors.transparent,
                               ],
                             ),
@@ -150,10 +146,9 @@ class _PrimaryButtonState extends State<PrimaryButton>
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                widget.isEnabled
-                                    ? Colors.white
-                                    : AppTheme.lightTheme.colorScheme
-                                        .onSurfaceVariant,
+                              widget.isEnabled
+                                ? Theme.of(context).colorScheme.onPrimary
+                                : Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           )
@@ -161,11 +156,9 @@ class _PrimaryButtonState extends State<PrimaryButton>
                             widget.text,
                             style: AppTheme.lightTheme.textTheme.titleMedium
                                 ?.copyWith(
-                              color: widget.isEnabled
-                                  ? Colors.white
-                                  : AppTheme
-                                      .lightTheme.colorScheme.onSurfaceVariant
-                                      .withValues(alpha: 0.6),
+                                color: widget.isEnabled
+                                  ? Theme.of(context).colorScheme.onPrimary
+                                  : Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(153),
                               fontWeight: FontWeight.w600,
                               letterSpacing: 0.5,
                             ),

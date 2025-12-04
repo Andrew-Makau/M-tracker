@@ -84,35 +84,31 @@ class _BiometricButtonState extends State<BiometricButton>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: widget.isEnabled
-                      ? [
-                          AppTheme.lightTheme.colorScheme.primary,
-                          AppTheme.lightTheme.colorScheme.secondary,
-                        ]
-                      : [
-                          AppTheme.lightTheme.colorScheme.onSurfaceVariant
-                              .withValues(alpha: 0.3),
-                          AppTheme.lightTheme.colorScheme.onSurfaceVariant
-                              .withValues(alpha: 0.2),
-                        ],
+                        ? [
+                            Theme.of(context).colorScheme.primary,
+                            Theme.of(context).colorScheme.secondary,
+                          ]
+                        : [
+                            Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(77),
+                            Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(51),
+                          ],
                 ),
                 boxShadow: widget.isEnabled
                     ? [
                         BoxShadow(
-                          color: AppTheme.lightTheme.colorScheme.primary
-                              .withValues(alpha: 0.3),
+                          color: AppTheme.shadowLight,
                           blurRadius: 20 * _pulseAnimation.value,
                           spreadRadius: 5 * _pulseAnimation.value,
                         ),
                       ]
                     : [],
               ),
-              child: Center(
+                  child: Center(
                 child: CustomIconWidget(
                   iconName: 'fingerprint',
                   color: widget.isEnabled
-                      ? Colors.white
-                      : AppTheme.lightTheme.colorScheme.onSurfaceVariant
-                          .withValues(alpha: 0.5),
+                      ? Theme.of(context).colorScheme.onPrimary
+                      : Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(128),
                   size: 8.w,
                 ),
               ),

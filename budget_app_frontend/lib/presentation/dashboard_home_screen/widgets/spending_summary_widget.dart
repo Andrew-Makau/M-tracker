@@ -32,7 +32,7 @@ class SpendingSummaryWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: AppTheme.shadowLight,
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -76,14 +76,14 @@ class SpendingSummaryWidget extends StatelessWidget {
                     child: CircularProgressIndicator(
                       value: progressPercentage,
                       strokeWidth: 8,
-                      backgroundColor: Colors.grey.shade200,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        progressPercentage > 0.8
-                            ? Colors.red.shade400
-                            : progressPercentage > 0.6
-                                ? Colors.orange.shade400
-                                : Colors.green.shade400,
-                      ),
+                      backgroundColor: Theme.of(context).dividerColor,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          progressPercentage > 0.8
+                              ? AppTheme.errorLight
+                              : progressPercentage > 0.6
+                                  ? AppTheme.warningLight
+                                  : AppTheme.successLight,
+                        ),
                     ),
                   ),
                   Column(
@@ -131,7 +131,7 @@ class SpendingSummaryWidget extends StatelessWidget {
                     style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
-                      color: Colors.red.shade600,
+                      color: AppTheme.errorLight,
                     ),
                   ),
                 ],
@@ -151,7 +151,7 @@ class SpendingSummaryWidget extends StatelessWidget {
                     style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green.shade600,
+                      color: AppTheme.successLight,
                     ),
                   ),
                 ],
@@ -213,7 +213,7 @@ class SpendingSummaryWidget extends StatelessWidget {
                   SizedBox(height: 1.h),
                   LinearProgressIndicator(
                     value: percentage,
-                    backgroundColor: Colors.grey.shade200,
+                    backgroundColor: Theme.of(context).dividerColor,
                     valueColor: AlwaysStoppedAnimation<Color>(color),
                     minHeight: 6,
                   ),

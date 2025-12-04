@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../../../widgets/pressable.dart';
 import '../../../widgets/loading_list.dart';
+import '../../../theme/app_theme.dart';
 
 class RecentTransactionsWidget extends StatelessWidget {
   final List<Map<String, dynamic>> transactions;
@@ -29,7 +30,7 @@ class RecentTransactionsWidget extends StatelessWidget {
       return Center(
         child: Text(
           'No recent transactions.',
-          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+          style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color),
         ),
       );
     }
@@ -50,10 +51,10 @@ class RecentTransactionsWidget extends StatelessWidget {
           onLongPress: () => onDeleteTransaction(txn),
           child: ListTile(
           leading: CircleAvatar(
-            backgroundColor: txn['categoryColor'] ?? Colors.blueAccent,
+            backgroundColor: txn['categoryColor'] ?? AppTheme.categoryColors[0],
             child: Icon(
               txn['type'] == 'income' ? Icons.arrow_downward : Icons.arrow_upward,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onPrimary,
             ),
           ),
           title: Text(txn['title'] ?? ''),
@@ -61,7 +62,7 @@ class RecentTransactionsWidget extends StatelessWidget {
             trailing: Text(
               '${txn['type'] == 'income' ? '+' : '-'} ${txn['amount']?.toStringAsFixed(2) ?? '0.00'}',
               style: TextStyle(
-                color: txn['type'] == 'income' ? Colors.green : Colors.red,
+                color: txn['type'] == 'income' ? AppTheme.successLight : AppTheme.errorLight,
                 fontWeight: FontWeight.bold,
               ),
             ),
