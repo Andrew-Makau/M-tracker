@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
-import './widgets/animated_gradient_background.dart';
+import '../login_screen/widgets/animated_gradient_background.dart';
 import './widgets/registration_form.dart';
 import './widgets/social_registration_buttons.dart';
 
@@ -146,33 +147,37 @@ Future<void> _handleRegistration() async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.lightTheme.colorScheme.surface,
-      body: AnimatedGradientBackground(
-        child: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 6.w),
-              child: Column(
-                children: [
-                  SizedBox(height: 2.h),
-                  _buildHeader(),
-                  SizedBox(height: 4.h),
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: _buildRegistrationCard(),
+      body: Stack(
+        children: [
+          const Positioned.fill(
+            child: AnimatedGradientBackground(),
+          ),
+          SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 6.w),
+                child: Column(
+                  children: [
+                    SizedBox(height: 2.h),
+                    _buildHeader(),
+                    SizedBox(height: 4.h),
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SlideTransition(
+                        position: _slideAnimation,
+                        child: _buildRegistrationCard(),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 3.h),
-                  _buildLoginLink(),
-                  SizedBox(height: 2.h),
-                ],
+                    SizedBox(height: 3.h),
+                    _buildLoginLink(),
+                    SizedBox(height: 2.h),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -212,7 +217,7 @@ Future<void> _handleRegistration() async {
           'Create Account',
           style: AppTheme.lightTheme.textTheme.headlineLarge?.copyWith(
             fontWeight: FontWeight.w700,
-            color: AppTheme.lightTheme.colorScheme.onSurface,
+            color: Theme.of(context).colorScheme.onPrimary,
           ),
         ),
         SizedBox(height: 1.h),
@@ -220,7 +225,7 @@ Future<void> _handleRegistration() async {
           'Join BudgetFlow and take control of your finances with our premium budget management tools',
           textAlign: TextAlign.center,
           style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-            color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+            color: Theme.of(context).colorScheme.onPrimary.withAlpha(230),
             height: 1.5,
           ),
         ),
@@ -229,36 +234,69 @@ Future<void> _handleRegistration() async {
   }
 
   Widget _buildRegistrationCard() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(6.w),
-      decoration: BoxDecoration(
-        color: AppTheme.lightTheme.colorScheme.surface.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppTheme.lightTheme.colorScheme.outline.withValues(alpha: 0.1),
-          width: 1,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(6.w),
+          decoration: BoxDecoration(
+            // Glassmorphism: translucent surface with improved contrast
+            color: Colors.white.withValues(alpha: 0.18),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.35),
+              width: 1.25,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.18),
+                blurRadius: 28,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              const SocialRegistrationButtons(),
+              SizedBox(height: 4.h),
+              // Divider consistent with login
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 1,
+                      color: Colors.white.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4.w),
+                    child: Text(
+                      'or sign up with email',
+                      style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimary.withAlpha(235),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      height: 1,
+                      color: Colors.white.withValues(alpha: 0.5),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 4.h),
+              RegistrationForm(
+                onValidationChanged: _onValidationChanged,
+                onFormDataChanged: _onFormDataChanged,
+              ),
+              SizedBox(height: 4.h),
+              _buildCreateAccountButton(),
+            ],
+          ),
         ),
-        boxShadow: [
-          BoxShadow(
-            color:
-                AppTheme.lightTheme.colorScheme.shadow.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          const SocialRegistrationButtons(),
-          SizedBox(height: 4.h),
-          RegistrationForm(
-            onValidationChanged: _onValidationChanged,
-            onFormDataChanged: _onFormDataChanged,
-          ),
-          SizedBox(height: 4.h),
-          _buildCreateAccountButton(),
-        ],
       ),
     );
   }
@@ -309,20 +347,21 @@ Future<void> _handleRegistration() async {
         Text(
           'Already have an account? ',
           style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-            color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+            color: Theme.of(context).colorScheme.onPrimary.withAlpha(235),
           ),
         ),
-        GestureDetector(
-          onTap: () {
+        TextButton(
+          onPressed: () {
             HapticFeedback.lightImpact();
             Navigator.pushReplacementNamed(context, '/login-screen');
           },
           child: Text(
             'Sign In',
             style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-              color: AppTheme.lightTheme.colorScheme.primary,
+              color: Theme.of(context).colorScheme.onPrimary,
               fontWeight: FontWeight.w600,
               decoration: TextDecoration.underline,
+              decorationColor: Theme.of(context).colorScheme.onPrimary,
             ),
           ),
         ),

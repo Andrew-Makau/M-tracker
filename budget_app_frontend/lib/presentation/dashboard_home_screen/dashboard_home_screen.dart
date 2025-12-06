@@ -5,6 +5,7 @@ import 'package:sizer/sizer.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../core/app_export.dart';
+import '../login_screen/widgets/animated_gradient_background.dart';
 import '../../services/transaction_service.dart';
 import '../../services/auth_service.dart';
 import './widgets/balance_card_widget.dart';
@@ -375,8 +376,11 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
-      body: SafeArea(
-        child: Column(
+      body: Stack(
+        children: [
+          const AnimatedGradientBackground(),
+          SafeArea(
+            child: Column(
           children: [
             // Sticky Header
             Container(
@@ -405,7 +409,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
                           overflow: TextOverflow.ellipsis,
                           style: AppTheme.lightTheme.textTheme.headlineSmall
                               ?.copyWith(
-                            fontSize: 20.sp,
+                            fontSize: 22.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -416,7 +420,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
                           overflow: TextOverflow.ellipsis,
                           style:
                               AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-                            fontSize: 12.sp,
+                            fontSize: 13.sp,
                             color:
                                 AppTheme.lightTheme.colorScheme.onSurfaceVariant,
                           ),
@@ -434,6 +438,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                           style: AppTheme.lightTheme.textTheme.labelSmall?.copyWith(
+                            fontSize: 11.sp,
                             color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
                           ),
                         ),
@@ -640,6 +645,8 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
             ),
           ],
         ),
+          ),
+        ],
       ),
 
       // Bottom Tab Navigation
@@ -683,12 +690,12 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
           unselectedItemColor: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
           selectedLabelStyle:
               AppTheme.lightTheme.textTheme.labelSmall?.copyWith(
-            fontSize: 10.sp,
+            fontSize: 11.sp,
             fontWeight: FontWeight.w600,
           ),
           unselectedLabelStyle:
               AppTheme.lightTheme.textTheme.labelSmall?.copyWith(
-            fontSize: 10.sp,
+            fontSize: 11.sp,
             fontWeight: FontWeight.w400,
           ),
           items: [

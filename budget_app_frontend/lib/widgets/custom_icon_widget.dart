@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 class CustomIconWidget extends StatelessWidget {
   final String iconName;
@@ -10,8 +11,36 @@ class CustomIconWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // First, render branded login logos via assets when requested
+    final Map<String, String> logoAssets = {
+      // Expect these files to exist under assets/images/
+      'google': 'assets/images/google_logo.png',
+      'apple': 'assets/images/apple_logo.png',
+    };
+
+    if (logoAssets.containsKey(iconName.toLowerCase())) {
+      final path = logoAssets[iconName.toLowerCase()]!;
+      return Image.asset(
+        path,
+        width: size,
+        height: size,
+        color: color, // allow optional tinting to fit button theme
+        errorBuilder: (context, error, stackTrace) {
+          // Graceful fallback to a simple icon if asset missing
+          return Icon(
+            iconName.toLowerCase() == 'apple' ? Icons.apple : Icons.g_translate,
+            size: size,
+            color: color,
+          );
+        },
+      );
+    }
+
     // Map of available icons
     final Map<String, IconData> iconMap = {
+      // Common brand icons (ensure availability across platforms)
+      'facebook': Icons.facebook,
+      'apple': Icons.apple,
       // A
       'abc': Icons.abc,
       'ac_unit': Icons.ac_unit,

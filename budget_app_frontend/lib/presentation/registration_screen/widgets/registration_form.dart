@@ -214,82 +214,96 @@ class _RegistrationFormState extends State<RegistrationForm> {
     VoidCallback? onTogglePassword,
     String? Function(String?)? validator,
   }) {
-    return Container(
-      decoration: BoxDecoration(
+    return Padding(
+      padding: EdgeInsets.only(bottom: 1.5.h),
+      child: Material(
+        color: AppTheme.lightTheme.colorScheme.surface.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(16),
-        color: AppTheme.lightTheme.colorScheme.surface.withValues(alpha: 0.8),
-        border: Border.all(
-          color: AppTheme.lightTheme.colorScheme.outline.withValues(alpha: 0.2),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color:
-                AppTheme.lightTheme.colorScheme.shadow.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+        elevation: 6,
+        child: TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          obscureText: isPassword && !isPasswordVisible,
+          style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onPrimary,
           ),
-        ],
-      ),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        obscureText: isPassword && !isPasswordVisible,
-        validator: validator,
-        style: AppTheme.lightTheme.textTheme.bodyMedium,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Padding(
-            padding: EdgeInsets.all(3.w),
-            child: CustomIconWidget(
-              iconName: iconName,
-              size: 20,
-              color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+          validator: validator,
+          autovalidateMode: AutovalidateMode.disabled,
+          decoration: InputDecoration(
+            labelText: label,
+            isDense: true,
+            prefixIcon: Padding(
+              padding: EdgeInsets.all(3.w),
+              child: CustomIconWidget(
+                iconName: iconName,
+                size: 20,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
             ),
-          ),
-          suffixIcon: isPassword
-              ? IconButton(
-                  onPressed: onTogglePassword,
-                  icon: CustomIconWidget(
-                    iconName:
-                        isPasswordVisible ? 'visibility_off' : 'visibility',
-                    size: 20,
-                    color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                  ),
-                )
-              : null,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: AppTheme.lightTheme.colorScheme.primary,
-              width: 2,
+            suffixIcon: isPassword
+                ? IconButton(
+                    onPressed: onTogglePassword,
+                    icon: CustomIconWidget(
+                      iconName:
+                          isPasswordVisible ? 'visibility_off' : 'visibility',
+                      size: 20,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  )
+                : null,
+
+            filled: true,
+            fillColor: Colors.transparent,
+            contentPadding: EdgeInsets.fromLTRB(4.w, 2.h, 4.w, 2.2.h),
+
+            // Let the field manage borders so error/help space is reserved
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: Colors.white.withValues(alpha: 0.25),
+                width: 1,
+              ),
             ),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: Colors.white.withValues(alpha: 0.25),
+                width: 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: AppTheme.lightTheme.colorScheme.primary,
+                width: 2,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: AppTheme.lightTheme.colorScheme.error,
+                width: 1,
+              ),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: AppTheme.lightTheme.colorScheme.error,
+                width: 2,
+              ),
+            ),
+            errorStyle: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
               color: AppTheme.lightTheme.colorScheme.error,
-              width: 1,
+              fontWeight: FontWeight.w600,
+              height: 1.0,
+            ),
+            labelStyle: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onPrimary.withAlpha(220),
+            ),
+            hintStyle: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onPrimary.withAlpha(180),
             ),
           ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: AppTheme.lightTheme.colorScheme.error,
-              width: 2,
-            ),
-          ),
-          contentPadding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
-          filled: true,
-          fillColor: Colors.transparent,
         ),
       ),
     );
@@ -303,7 +317,9 @@ class _RegistrationFormState extends State<RegistrationForm> {
           children: [
             Text(
               'Password Strength: ',
-              style: AppTheme.lightTheme.textTheme.bodySmall,
+              style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
             ),
             Text(
               _passwordStrength,
@@ -317,8 +333,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
         SizedBox(height: 1.h),
         LinearProgressIndicator(
           value: _passwordRequirements.values.where((v) => v).length / 5,
-          backgroundColor:
-              AppTheme.lightTheme.colorScheme.outline.withValues(alpha: 0.2),
+          backgroundColor: Colors.white.withValues(alpha: 0.25),
           valueColor: AlwaysStoppedAnimation<Color>(_passwordStrengthColor),
         ),
       ],
@@ -333,6 +348,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
           'Password Requirements:',
           style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
             fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onPrimary,
           ),
         ),
         SizedBox(height: 0.5.h),
@@ -374,7 +390,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                   style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
                     color: entry.value
                         ? AppTheme.lightTheme.colorScheme.tertiary
-                        : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                        : Theme.of(context).colorScheme.onPrimary.withAlpha(200),
                   ),
                 ),
               ],
@@ -411,7 +427,9 @@ class _RegistrationFormState extends State<RegistrationForm> {
               padding: EdgeInsets.only(top: 1.5.h),
               child: RichText(
                 text: TextSpan(
-                  style: AppTheme.lightTheme.textTheme.bodySmall,
+                  style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
                   children: [
                     const TextSpan(text: 'I agree to the '),
                     TextSpan(
