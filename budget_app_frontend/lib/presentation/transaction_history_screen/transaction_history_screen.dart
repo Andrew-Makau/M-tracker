@@ -11,6 +11,7 @@ import './widgets/search_bar_widget.dart';
 import './widgets/transaction_card_widget.dart';
 import './widgets/transaction_filter_widget.dart';
 import '../../widgets/loading_list.dart';
+import '../../widgets/app_bottom_nav.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
@@ -669,11 +670,44 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
       ),
       floatingActionButton:
           _isMultiSelectMode ? null : _buildFloatingActionButton(),
+      bottomNavigationBar: AppBottomNav(
+        currentIndex: 1,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                AppRoutes.dashboardHome,
+                (route) => false,
+              );
+              break;
+            case 1:
+              // current screen
+              break;
+            case 2:
+              Navigator.pushNamed(context, '/budget-categories-screen');
+              break;
+            case 3:
+              Navigator.pushNamed(context, '/profile-screen');
+              break;
+          }
+        },
+      ),
     );
   }
 
   PreferredSizeWidget _buildNormalAppBar() {
     return BrandAppBar(
+      leading: IconButton(
+        onPressed: () {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRoutes.dashboardHome,
+            (route) => false,
+          );
+        },
+        icon: const Icon(Icons.home),
+      ),
       title: Text('Transaction History'),
       actions: [
         Row(

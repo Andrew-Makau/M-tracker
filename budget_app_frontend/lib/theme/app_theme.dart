@@ -8,18 +8,18 @@ class AppTheme {
 
   // Design System Colors - Adaptive Professional Palette
     // Money / Budget focused palette: greens for trust, gold accents for highlights
-    static const Color primaryLight = Color(0xFF0B6E4F); // Deep money green
-    static const Color primaryDark = Color(0xFF34D399); // Brighter green for dark mode emphasis
-    static const Color secondaryLight = Color(0xFFF8FAFC); // Clean background (light)
-    static const Color secondaryDark = Color(0xFF0F1724); // Dark background with contrast
-    static const Color accentLight = Color(0xFF16A34A); // Emerald accent for buttons/links
-    static const Color accentDark = Color(0xFF60D394); // Softer accent in dark mode
-    static const Color successLight = Color(0xFF10B981); // Confirmation / income
-    static const Color successDark = Color(0xFF34D399); // Success in dark mode
-  static const Color warningLight = Color(0xFFF59E0B); // Form validation
-  static const Color warningDark = Color(0xFFFBBF24); // Warning in dark mode
-  static const Color errorLight = Color(0xFFEF4444); // Critical states
-  static const Color errorDark = Color(0xFFF87171); // Error in dark mode
+    static const Color primaryLight = Color(0xFF4B5563); // Grey as primary (Gray 700)
+    static const Color primaryDark = Color(0xFF374151); // Darker grey for dark mode primary
+    static const Color secondaryLight = Color(0xFFFF8C00); // Orange as secondary (Dark Orange)
+    static const Color secondaryDark = Color(0xFFFFA500); // Orange variant for dark mode
+    static const Color accentLight = Color(0xFFFFFFFF); // White accent
+    static const Color accentDark = Color(0xFFEEEEEE); // Softer white in dark mode
+    static const Color successLight = Color(0xFF10B981); // Green (success)
+    static const Color successDark = Color(0xFF34D399); // Green variant in dark mode
+  static const Color warningLight = Color(0xFFF59E0B); // Orange/amber for warnings
+  static const Color warningDark = Color(0xFFFBBF24);
+  static const Color errorLight = Color(0xFFEF4444); // Red (error)
+  static const Color errorDark = Color(0xFFF87171);
   static const Color surfaceElevatedLight =
       Color(0xFFFFFFFF); // Card backgrounds
   static const Color surfaceElevatedDark =
@@ -30,7 +30,7 @@ class AppTheme {
 
   // Brand gradient and helpers to blend theme colors consistently across the app
   static const LinearGradient brandGradient = LinearGradient(
-    colors: [primaryLight, accentLight],
+    colors: [primaryLight, secondaryLight],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -88,14 +88,14 @@ class AppTheme {
       onPrimary: Colors.white,
       primaryContainer: primaryLight.withAlpha(26),
       onPrimaryContainer: primaryLight,
-      secondary: accentLight,
+      secondary: secondaryLight,
       onSecondary: Colors.white,
-      secondaryContainer: accentLight.withAlpha(26),
-      onSecondaryContainer: accentLight,
-      tertiary: successLight,
-      onTertiary: Colors.white,
-      tertiaryContainer: successLight.withAlpha(26),
-      onTertiaryContainer: successLight,
+      secondaryContainer: secondaryLight.withAlpha(26),
+      onSecondaryContainer: secondaryLight,
+      tertiary: accentLight, // white as tertiary base
+      onTertiary: primaryLight, // text on white
+      tertiaryContainer: accentLight.withAlpha(26),
+      onTertiaryContainer: primaryLight,
       error: errorLight,
       onError: Colors.white,
       surface: secondaryLight,
@@ -107,7 +107,7 @@ class AppTheme {
       scrim: Colors.black54,
       inverseSurface: textPrimaryLight,
       onInverseSurface: secondaryLight,
-      inversePrimary: accentLight,
+      inversePrimary: secondaryLight,
     ),
     scaffoldBackgroundColor: secondaryLight,
     cardColor: surfaceElevatedLight,

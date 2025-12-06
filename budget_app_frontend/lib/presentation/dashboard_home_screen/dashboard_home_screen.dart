@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:sizer/sizer.dart';
+// import 'package:sizer/sizer.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../core/app_export.dart';
-import '../login_screen/widgets/animated_gradient_background.dart';
+// Removed gradient background for minimal/flat design
+import '../../core/design_tokens.dart';
+import '../../widgets/app_bottom_nav.dart';
+// import 'package:dot_curved_bottom_nav/dot_curved_bottom_nav.dart'; // enable after pub get
 import '../../services/transaction_service.dart';
 import '../../services/auth_service.dart';
 import './widgets/balance_card_widget.dart';
-import './widgets/quick_actions_widget.dart';
 import './widgets/recent_transactions_widget.dart';
 import './widgets/spending_summary_widget.dart';
 
@@ -28,9 +30,11 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
 
   bool _isBalanceVisible = true;
   bool _isRefreshing = false;
-  int _selectedTabIndex = 0;
+  // int _selectedTabIndex = 0; // removed, unused
+  int _currentPage = 0; // for dot curved nav
+  // final ScrollController _scrollController = ScrollController();
   String _userName = "Andrew"; // default fallback until loaded from storage
-  DateTime _lastUpdated = DateTime.now();
+  // Removed unused field: _lastUpdated
   bool _useLiveData = false;
 
   // Mock data
@@ -121,6 +125,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
   bool _isLoadingLive = false;
   double? _liveSpent;
   double? _liveIncome;
+  DateTime? _selectedDate;
 
   @override
   void initState() {
@@ -160,7 +165,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
   void _handleTabSelection() {
     if (_tabController.indexIsChanging) {
       setState(() {
-        _selectedTabIndex = _tabController.index;
+        // _selectedTabIndex = _tabController.index; // removed, unused
       });
       HapticFeedback.lightImpact();
     }
@@ -185,7 +190,6 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
 
     setState(() {
       _isRefreshing = false;
-      _lastUpdated = DateTime.now();
     });
 
     _refreshAnimationController.reset();
@@ -243,12 +247,20 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
 
   void _handleAddExpense() {
     HapticFeedback.lightImpact();
-    Navigator.pushNamed(context, '/add-expense-screen');
+    Navigator.pushNamed(
+      context,
+      '/add-expense-screen',
+      arguments: {'type': 'expense'},
+    );
   }
 
   void _handleAddIncome() {
     HapticFeedback.lightImpact();
-    Navigator.pushNamed(context, '/add-expense-screen');
+    Navigator.pushNamed(
+      context,
+      '/add-expense-screen',
+      arguments: {'type': 'income'},
+    );
   }
 
   void _handleViewBudgets() {
@@ -258,8 +270,38 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
 
   void _handleViewReports() {
     HapticFeedback.lightImpact();
-    Navigator.pushNamed(context, '/transaction-history-screen');
+    Navigator.pushNamed(context, '/reports-screen');
   }
+
+  // Removed unused history handler after cleaning AppBar actions
+
+  void _toggleLiveData() {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _useLiveData = !_useLiveData;
+    });
+    if (_useLiveData) {
+      // Optionally kick off a refresh when switching to live
+      _handleRefresh();
+    }
+  }
+
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? now,
+      firstDate: DateTime(now.year - 2),
+      lastDate: DateTime(now.year + 2),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDate = DateTime(picked.year, picked.month, picked.day);
+      });
+    }
+  }
+
+  // Removed bottom sheet quick actions in favor of side drawer
 
   void _handleEditTransaction(Map<String, dynamic> transaction) {
     HapticFeedback.lightImpact();
@@ -346,163 +388,177 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
     return capped.isEmpty ? _userName : capped;
   }
 
-  String _getGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) {
-      return 'Good Morning';
-    } else if (hour < 17) {
-      return 'Good Afternoon';
-    } else {
-      return 'Good Evening';
-    }
-  }
-
-  String _formatLastUpdated() {
-    final now = DateTime.now();
-    final difference = now.difference(_lastUpdated);
-
-    if (difference.inMinutes < 1) {
-      return 'Just now';
-    } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}m ago';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours}h ago';
-    } else {
-      return '${difference.inDays}d ago';
-    }
-  }
+  // Removed unused UI helpers (_getGreeting, _buildAvatar, _formatLastUpdated)
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
-      body: Stack(
-        children: [
-          const AnimatedGradientBackground(),
-          SafeArea(
-            child: Column(
-          children: [
-            // Sticky Header
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
-              decoration: BoxDecoration(
-                color: AppTheme.lightTheme.cardColor,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.shadowLight,
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+      appBar: AppBar(
+        title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+        ),
+        leading: Builder(
+          builder: (context) => IconButton(
+            tooltip: 'Quick Actions',
+            icon: const Icon(Icons.grid_view, color: Colors.white),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.secondary,
+              ],
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x33000000),
+                blurRadius: 12,
+                offset: Offset(0, 4),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${_getGreeting()}, $_userName!',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTheme.lightTheme.textTheme.headlineSmall
-                              ?.copyWith(
-                            fontSize: 22.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 0.5.h),
-                        Text(
-                          'Last updated: ${_formatLastUpdated()}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style:
-                              AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-                            fontSize: 13.sp,
-                            color:
-                                AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: 18.w),
-                        child: Text(
-                          _useLiveData ? 'Live' : 'Mock',
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: AppTheme.lightTheme.textTheme.labelSmall?.copyWith(
-                            fontSize: 11.sp,
-                            color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                      Switch(
-                        value: _useLiveData,
-                        activeThumbColor: AppTheme.lightTheme.primaryColor,
-                        onChanged: (val) async {
-                          HapticFeedback.lightImpact();
-                          setState(() => _useLiveData = val);
-                          if (val) {
-                            // switching to Live → fetch
-                            await _fetchAndSetTransactions();
-                          } else {
-                            // switching back to Mock → restore initial mock list
-                            setState(() {
-                              _recentTransactions = List<Map<String, dynamic>>.from(_initialMockTransactions);
-                            });
-                          }
-                        },
-                      ),
+            ],
+          ),
+        ),
+        actions: [
+          // Date picker for indexed search by day
+          IconButton(
+            tooltip: _selectedDate == null
+                ? 'Pick Date'
+                : 'Selected: ${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}',
+            icon: const Icon(Icons.calendar_month, color: Colors.white),
+            onPressed: _pickDate,
+          ),
+          // Settings
+          IconButton(
+            tooltip: 'Settings',
+            icon: const Icon(Icons.settings, color: Colors.white),
+            onPressed: () => Navigator.pushNamed(context, '/profile-screen'),
+          ),
+          // Live/Mock toggle
+          IconButton(
+            tooltip: _useLiveData ? 'Live Data: ON' : 'Live Data: OFF',
+            icon: Icon(_useLiveData ? Icons.wifi : Icons.storage, color: Colors.white),
+            onPressed: _toggleLiveData,
+          ),
+          // Removed Add Expense and Add Income from AppBar actions
+          // Removed Budgets, Reports, and History icons from AppBar
+        ],
+      ),
+      drawer: Drawer(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topRight: Radius.circular(20),
+            bottomRight: Radius.circular(20),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme.secondary,
                     ],
                   ),
-                  GestureDetector(
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      Fluttertoast.showToast(
-                        msg: "No new notifications",
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.BOTTOM,
-                      );
-                    },
-                        child: Container(
-                      padding: EdgeInsets.all(3.w),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withAlpha(26),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Stack(
-                        children: [
-                          CustomIconWidget(
-                            iconName: 'notifications',
-                            color: AppTheme.lightTheme.primaryColor,
-                            size: 24,
-                          ),
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                              child: Container(
-                              width: 2.w,
-                              height: 2.w,
-                              decoration: BoxDecoration(
-                                color: AppTheme.errorLight,
-                                borderRadius: BorderRadius.circular(1.w),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Quick Actions',
+                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
                     ),
-                  ),
-                ],
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
               ),
-            ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: LayoutBuilder(builder: (context, constraints) {
+                    final double width = constraints.maxWidth;
+                    final int cols = width < 360 ? 2 : 3;
+                    return GridView.count(
+                      crossAxisCount: cols,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      children: [
+                        _QuickActionButton(
+                          iconData: Icons.remove_circle_outline,
+                          label: 'Add Expense',
+                          color: AppTheme.errorLight,
+                          onTap: () {
+                            Navigator.pop(context);
+                            _handleAddExpense();
+                          },
+                        ),
+                        _QuickActionButton(
+                          iconData: Icons.add_circle_outline,
+                          label: 'Add Income',
+                          color: AppTheme.successLight,
+                          onTap: () {
+                            Navigator.pop(context);
+                            _handleAddIncome();
+                          },
+                        ),
+                        _QuickActionButton(
+                          iconData: Icons.receipt_long,
+                          label: 'Recent Transactions',
+                          color: AppTheme.lightTheme.primaryColor,
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.pushNamed(context, '/transaction-history-screen');
+                          },
+                        ),
+                        _QuickActionButton(
+                          iconData: Icons.pie_chart_outline,
+                          label: 'Budgets',
+                          color: AppTheme.categoryColors[2],
+                          onTap: () {
+                            Navigator.pop(context);
+                            _handleViewBudgets();
+                          },
+                        ),
+                        _QuickActionButton(
+                          iconData: Icons.bar_chart,
+                          label: 'Reports',
+                          color: AppTheme.categoryColors[5],
+                          onTap: () {
+                            Navigator.pop(context);
+                            _handleViewReports();
+                          },
+                        ),
+                      ],
+                    );
+                  }),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: SafeArea(
+            child: Column(
+          children: [
+            // Header moved to AppTopBar
 
             // Main Content
             Expanded(
@@ -511,236 +567,196 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
                 color: AppTheme.lightTheme.primaryColor,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  child: Column(
-                    children: [
-                      SizedBox(height: 2.h),
-
-                      // Balance Card
-                      Builder(builder: (context) {
-                        // When live data is enabled, compute the total from recent transactions.
-                        double displayedBalance = _totalBalance;
-                        if (_useLiveData) {
-                          if (_liveIncome != null && _liveSpent != null) {
-                            displayedBalance = (_liveIncome ?? 0.0) - (_liveSpent ?? 0.0);
-                          } else if (_recentTransactions.isNotEmpty) {
-                            double sum = 0.0;
-                            for (final tx in _recentTransactions) {
-                              final amt = (tx['amount'] is num) ? (tx['amount'] as num).toDouble() : 0.0;
-                              final type = (tx['type'] ?? 'expense').toString().toLowerCase();
-                              if (type == 'income') {
-                                sum += amt;
-                              } else {
-                                sum -= amt;
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isWide = constraints.maxWidth >= 800;
+                      final tileSpacing = kSpacingM;
+                      return Wrap(
+                        spacing: tileSpacing,
+                        runSpacing: tileSpacing,
+                        alignment: WrapAlignment.start,
+                        children: [
+                      SizedBox(height: kSpacingM),
+                          // Balance Card (full-width or half on wide)
+                          SizedBox(
+                            width: isWide ? (constraints.maxWidth - tileSpacing) / 2 : constraints.maxWidth,
+                            child: Builder(builder: (context) {
+                              double displayedBalance = _totalBalance;
+                              if (_useLiveData) {
+                                if (_liveIncome != null && _liveSpent != null) {
+                                  displayedBalance = (_liveIncome ?? 0.0) - (_liveSpent ?? 0.0);
+                                } else if (_recentTransactions.isNotEmpty) {
+                                  double sum = 0.0;
+                                    final Iterable<Map<String, dynamic>> sourceTx = _selectedDate == null
+                                      ? _recentTransactions
+                                      : _recentTransactions.where((tx) {
+                                        final DateTime d = (tx['date'] is DateTime)
+                                          ? tx['date'] as DateTime
+                                          : DateTime.tryParse(tx['date'].toString()) ?? DateTime.now();
+                                        return d.year == _selectedDate!.year &&
+                                          d.month == _selectedDate!.month &&
+                                          d.day == _selectedDate!.day;
+                                      });
+                                  for (final tx in sourceTx) {
+                                    final amt = (tx['amount'] is num) ? (tx['amount'] as num).toDouble() : 0.0;
+                                    final type = (tx['type'] ?? 'expense').toString().toLowerCase();
+                                    if (type == 'income') {
+                                      sum += amt;
+                                    } else {
+                                      sum -= amt;
+                                    }
+                                  }
+                                  displayedBalance = sum;
+                                }
                               }
-                            }
-                            displayedBalance = sum;
-                          }
-                        }
-
-                        return BalanceCardWidget(
-                          totalBalance: displayedBalance,
-                          isBalanceVisible: _isBalanceVisible,
-                          onToggleVisibility: _toggleBalanceVisibility,
-                          useLiveData: _useLiveData,
-                        );
-                      }),
-
-                      // Quick Actions
-                      QuickActionsWidget(
-                        onAddExpense: _handleAddExpense,
-                        onAddIncome: _handleAddIncome,
-                        onViewBudgets: _handleViewBudgets,
-                        onViewReports: _handleViewReports,
-                      ),
-
-                      // Spending Summary
-                      Builder(builder: (context) {
-                        // When live data is enabled, compute spent amount and category breakdown
-                        double computedSpent = _spentAmount;
-                        List<Map<String, dynamic>> computedBreakdown = List<Map<String, dynamic>>.from(_categoryBreakdown);
-
-                        if (_useLiveData && _recentTransactions.isNotEmpty) {
-                          // Prefer server-provided summary if available
-                          double spent = (_liveSpent != null) ? _liveSpent! : 0.0;
-                          final Map<String, double> catSums = {};
-                          final Map<String, Color> catColors = {};
-                          // If the backend didn't provide a breakdown, compute per-category sums locally.
-                          if (_liveSpent == null) {
-                            for (final tx in _recentTransactions) {
-                              final amt = (tx['amount'] is num) ? (tx['amount'] as num).toDouble() : 0.0;
-                              final type = (tx['type'] ?? 'expense').toString().toLowerCase();
-                              final catName = (tx['category'] ?? 'Uncategorized').toString();
-                              final catColor = (tx['categoryColor'] is Color) ? tx['categoryColor'] as Color : Theme.of(context).dividerColor;
-
-                              if (type == 'expense') {
-                                spent += amt;
-                                catSums[catName] = (catSums[catName] ?? 0.0) + amt;
-                                catColors[catName] = catColor;
-                              }
-                            }
-                            computedSpent = spent;
-
-                            // Convert map to list sorted by amount desc
-                            computedBreakdown = catSums.entries.map((e) {
-                              return {
-                                'name': e.key,
-                                'amount': e.value,
-                                'color': catColors[e.key] ?? Theme.of(context).dividerColor,
-                              };
-                            }).toList()
-                              ..sort((a, b) => (b['amount'] as double).compareTo(a['amount'] as double));
-                          } else {
-                            // We have a server-provided spent value; still compute breakdown locally
-                            final Map<String, double> localCatSums = {};
-                            final Map<String, Color> localCatColors = {};
-                            for (final tx in _recentTransactions) {
-                              final amt = (tx['amount'] is num) ? (tx['amount'] as num).toDouble() : 0.0;
-                              final type = (tx['type'] ?? 'expense').toString().toLowerCase();
-                              final catName = (tx['category'] ?? 'Uncategorized').toString();
-                              final catColor = (tx['categoryColor'] is Color) ? tx['categoryColor'] as Color : Theme.of(context).dividerColor;
-                              if (type == 'expense') {
-                                localCatSums[catName] = (localCatSums[catName] ?? 0.0) + amt;
-                                localCatColors[catName] = catColor;
-                              }
-                            }
-                            computedBreakdown = localCatSums.entries.map((e) {
-                              return {
-                                'name': e.key,
-                                'amount': e.value,
-                                'color': localCatColors[e.key] ?? Theme.of(context).dividerColor,
-                              };
-                            }).toList()
-                              ..sort((a, b) => (b['amount'] as double).compareTo(a['amount'] as double));
-                          }
-                        }
-
-                        return SpendingSummaryWidget(
-                          monthlyBudget: _monthlyBudget,
-                          spentAmount: computedSpent,
-                          categoryBreakdown: computedBreakdown,
-                        );
-                      }),
-
-                      // Recent Transactions
-                      if (_isLoadingLive)
-                        Padding(
-                          padding: EdgeInsets.symmetric(vertical: 1.h),
-                          child: LinearProgressIndicator(
-                            minHeight: 4,
-                            color: AppTheme.lightTheme.primaryColor,
+                              return BalanceCardWidget(
+                                totalBalance: displayedBalance,
+                                isBalanceVisible: _isBalanceVisible,
+                                onToggleVisibility: _toggleBalanceVisibility,
+                                useLiveData: _useLiveData,
+                                userName: _userName,
+                              );
+                            }),
                           ),
-                        ),
-                      RecentTransactionsWidget(
-                        transactions: _recentTransactions,
-                        onEditTransaction: _handleEditTransaction,
-                        onDeleteTransaction: _handleDeleteTransaction,
-                        onCategorizeTransaction: _handleCategorizeTransaction,
-                      ),
 
-                      SizedBox(height: 10.h), // Bottom padding for tab bar
-                    ],
+                          // Quick Actions moved to AppBar actions
+
+                          // Spending Summary (tile)
+                          SizedBox(
+                            width: isWide ? (constraints.maxWidth - tileSpacing) / 2 : constraints.maxWidth,
+                            child: Builder(builder: (context) {
+                              double computedSpent = _spentAmount;
+                              List<Map<String, dynamic>> computedBreakdown = List<Map<String, dynamic>>.from(_categoryBreakdown);
+                              final List<Map<String, dynamic>> filteredTx = _selectedDate == null
+                                  ? _recentTransactions
+                                  : _recentTransactions.where((tx) {
+                                      final DateTime d = (tx['date'] is DateTime)
+                                          ? tx['date'] as DateTime
+                                          : DateTime.tryParse(tx['date'].toString()) ?? DateTime.now();
+                                      return d.year == _selectedDate!.year &&
+                                          d.month == _selectedDate!.month &&
+                                          d.day == _selectedDate!.day;
+                                    }).toList();
+
+                              if (_useLiveData && filteredTx.isNotEmpty) {
+                                double spent = (_liveSpent != null) ? _liveSpent! : 0.0;
+                                final Map<String, double> catSums = {};
+                                final Map<String, Color> catColors = {};
+                                if (_liveSpent == null) {
+                                  for (final tx in filteredTx) {
+                                    final amt = (tx['amount'] is num) ? (tx['amount'] as num).toDouble() : 0.0;
+                                    final type = (tx['type'] ?? 'expense').toString().toLowerCase();
+                                    final catName = (tx['category'] ?? 'Uncategorized').toString();
+                                    final catColor = (tx['categoryColor'] is Color) ? tx['categoryColor'] as Color : Theme.of(context).dividerColor;
+                                    if (type == 'expense') {
+                                      spent += amt;
+                                      catSums[catName] = (catSums[catName] ?? 0.0) + amt;
+                                      catColors[catName] = catColor;
+                                    }
+                                  }
+                                  computedSpent = spent;
+                                  computedBreakdown = catSums.entries.map((e) {
+                                    return {
+                                      'name': e.key,
+                                      'amount': e.value,
+                                      'color': catColors[e.key] ?? Theme.of(context).dividerColor,
+                                    };
+                                  }).toList()
+                                    ..sort((a, b) => (b['amount'] as double).compareTo(a['amount'] as double));
+                                } else {
+                                  final Map<String, double> localCatSums = {};
+                                  final Map<String, Color> localCatColors = {};
+                                  for (final tx in filteredTx) {
+                                    final amt = (tx['amount'] is num) ? (tx['amount'] as num).toDouble() : 0.0;
+                                    final type = (tx['type'] ?? 'expense').toString().toLowerCase();
+                                    final catName = (tx['category'] ?? 'Uncategorized').toString();
+                                    final catColor = (tx['categoryColor'] is Color) ? tx['categoryColor'] as Color : Theme.of(context).dividerColor;
+                                    if (type == 'expense') {
+                                      localCatSums[catName] = (localCatSums[catName] ?? 0.0) + amt;
+                                      localCatColors[catName] = catColor;
+                                    }
+                                  }
+                                  computedBreakdown = localCatSums.entries.map((e) {
+                                    return {
+                                      'name': e.key,
+                                      'amount': e.value,
+                                      'color': localCatColors[e.key] ?? Theme.of(context).dividerColor,
+                                    };
+                                  }).toList()
+                                    ..sort((a, b) => (b['amount'] as double).compareTo(a['amount'] as double));
+                                }
+                              }
+                              return SpendingSummaryWidget(
+                                monthlyBudget: _monthlyBudget,
+                                spentAmount: computedSpent,
+                                categoryBreakdown: computedBreakdown,
+                              );
+                            }),
+                          ),
+
+                          // Recent Transactions (full-width tile)
+                          SizedBox(
+                            width: constraints.maxWidth,
+                            child: Column(
+                              children: [
+                                if (_isLoadingLive)
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(vertical: kSpacingS),
+                                    child: LinearProgressIndicator(
+                                      minHeight: 4,
+                                      color: AppTheme.lightTheme.primaryColor,
+                                    ),
+                                  ),
+                                RecentTransactionsWidget(
+                                  transactions: _selectedDate == null
+                                      ? _recentTransactions
+                                      : _recentTransactions.where((tx) {
+                                          final DateTime d = (tx['date'] is DateTime)
+                                              ? tx['date'] as DateTime
+                                              : DateTime.tryParse(tx['date'].toString()) ?? DateTime.now();
+                                          return d.year == _selectedDate!.year &&
+                                              d.month == _selectedDate!.month &&
+                                              d.day == _selectedDate!.day;
+                                        }).toList(),
+                                  onEditTransaction: _handleEditTransaction,
+                                  onDeleteTransaction: _handleDeleteTransaction,
+                                  onCategorizeTransaction: _handleCategorizeTransaction,
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          SizedBox(width: constraints.maxWidth, height: kSpacingXL),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
             ),
           ],
         ),
-          ),
-        ],
       ),
 
       // Bottom Tab Navigation
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-                color: AppTheme.shadowLight,
-                blurRadius: 20,
-                offset: const Offset(0, -5),
-              ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _selectedTabIndex,
-          onTap: (index) {
-            setState(() {
-              _selectedTabIndex = index;
-            });
-            HapticFeedback.lightImpact();
-
-            // Navigate to different screens based on tab
-            switch (index) {
-              case 0:
-                // Already on home
-                break;
-              case 1:
-                Navigator.pushNamed(context, '/transaction-history-screen');
-                break;
-              case 2:
-                Navigator.pushNamed(context, '/budget-categories-screen');
-                break;
-              case 3:
-                Navigator.pushNamed(context, '/profile-screen');
-                break;
-            }
-          },
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: AppTheme.lightTheme.cardColor,
-          selectedItemColor: AppTheme.lightTheme.primaryColor,
-          unselectedItemColor: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-          selectedLabelStyle:
-              AppTheme.lightTheme.textTheme.labelSmall?.copyWith(
-            fontSize: 11.sp,
-            fontWeight: FontWeight.w600,
-          ),
-          unselectedLabelStyle:
-              AppTheme.lightTheme.textTheme.labelSmall?.copyWith(
-            fontSize: 11.sp,
-            fontWeight: FontWeight.w400,
-          ),
-          items: [
-            BottomNavigationBarItem(
-              icon: CustomIconWidget(
-                iconName: 'home',
-                color: _selectedTabIndex == 0
-                    ? AppTheme.lightTheme.primaryColor
-                    : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                size: 24,
-              ),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: CustomIconWidget(
-                iconName: 'history',
-                color: _selectedTabIndex == 1
-                    ? AppTheme.lightTheme.primaryColor
-                    : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                size: 24,
-              ),
-              label: 'History',
-            ),
-            BottomNavigationBarItem(
-              icon: CustomIconWidget(
-                iconName: 'pie_chart',
-                color: _selectedTabIndex == 2
-                    ? AppTheme.lightTheme.primaryColor
-                    : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                size: 24,
-              ),
-              label: 'Budget',
-            ),
-            BottomNavigationBarItem(
-              icon: CustomIconWidget(
-                iconName: 'person',
-                color: _selectedTabIndex == 3
-                    ? AppTheme.lightTheme.primaryColor
-                    : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                size: 24,
-              ),
-              label: 'Profile',
-            ),
-          ],
-        ),
+      bottomNavigationBar: AppBottomNav(
+        currentIndex: _currentPage,
+        onTap: (index) {
+          setState(() => _currentPage = index);
+          switch (index) {
+            case 0:
+              break;
+            case 1:
+              Navigator.pushNamed(context, '/transaction-history-screen');
+              break;
+            case 2:
+              Navigator.pushNamed(context, '/budget-categories-screen');
+              break;
+            case 3:
+              Navigator.pushNamed(context, '/reports-screen');
+              break;
+          }
+        },
       ),
 
       // Floating Action Button
@@ -764,6 +780,156 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    );
+  }
+
+  // removed unused helper
+
+}
+
+class _QuickActionButton extends StatelessWidget {
+  final IconData iconData;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _QuickActionButton({
+    required this.iconData,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        decoration: BoxDecoration(
+          color: color.withAlpha(26),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withAlpha(77), width: 1),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(iconData, color: cs.onPrimary, size: 24),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HoverableNavIcon extends StatefulWidget {
+  final IconData iconData;
+  final bool isActive;
+  final Color baseColor;
+
+  const _HoverableNavIcon({
+    required this.iconData,
+    required this.isActive,
+    required this.baseColor,
+  });
+
+  @override
+  State<_HoverableNavIcon> createState() => _HoverableNavIconState();
+}
+
+class _HoverableNavIconState extends State<_HoverableNavIcon>
+    with SingleTickerProviderStateMixin {
+  bool _hovering = false;
+  late AnimationController _controller;
+  late Animation<double> _scale;
+  late Animation<double> _bubbleOpacity;
+  late Animation<double> _bubbleSize;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 140),
+    );
+    _scale = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+    _bubbleOpacity = Tween<double>(begin: 0.0, end: 0.35).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+    _bubbleSize = Tween<double>(begin: 0.0, end: 26.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hoverColor = widget.isActive
+        ? AppTheme.lightTheme.primaryColor
+        : AppTheme.lightTheme.primaryColor.withValues(alpha: 0.6);
+
+    return MouseRegion(
+      onEnter: (_) {
+        setState(() => _hovering = true);
+        _controller.forward();
+      },
+      onExit: (_) {
+        setState(() => _hovering = false);
+        _controller.reverse();
+      },
+      cursor: SystemMouseCursors.click,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              // Soft circular bubble behind icon
+              Container(
+                width: _bubbleSize.value,
+                height: _bubbleSize.value,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: hoverColor.withValues(alpha: _bubbleOpacity.value),
+                ),
+              ),
+              ScaleTransition(
+                scale: _scale,
+                child: Icon(
+                  widget.iconData,
+                  size: 24,
+                  color: _hovering ? hoverColor : widget.baseColor,
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 }

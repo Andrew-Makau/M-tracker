@@ -7,6 +7,7 @@ import './widgets/category_card_widget.dart';
 import './widgets/category_search_bar_widget.dart';
 import './widgets/empty_state_widget.dart';
 import './widgets/time_period_toggle_widget.dart';
+import '../../widgets/app_bottom_nav.dart';
 
 class BudgetCategoriesScreen extends StatefulWidget {
   const BudgetCategoriesScreen({super.key});
@@ -295,6 +296,16 @@ class _BudgetCategoriesScreenState extends State<BudgetCategoriesScreen>
     return Scaffold(
       backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
       appBar: BrandAppBar(
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              AppRoutes.dashboardHome,
+              (route) => false,
+            );
+          },
+          icon: const Icon(Icons.home),
+        ),
         title: Text(
           'Budget Categories',
           style: AppTheme.lightTheme.textTheme.headlineSmall?.copyWith(
@@ -304,14 +315,6 @@ class _BudgetCategoriesScreenState extends State<BudgetCategoriesScreen>
         // keep transparent background so the gradient shows through
         backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
         elevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: CustomIconWidget(
-            iconName: 'arrow_back',
-            color: AppTheme.lightTheme.colorScheme.onSurface,
-            size: 6.w,
-          ),
-        ),
         actions: [
           if (_isMultiSelectMode) ...[
             IconButton(
@@ -349,6 +352,29 @@ class _BudgetCategoriesScreenState extends State<BudgetCategoriesScreen>
             ),
           ],
         ],
+      ),
+      bottomNavigationBar: AppBottomNav(
+        currentIndex: 2,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                AppRoutes.dashboardHome,
+                (route) => false,
+              );
+              break;
+            case 1:
+              Navigator.pushNamed(context, '/transaction-history-screen');
+              break;
+            case 2:
+              // current screen
+              break;
+            case 3:
+              Navigator.pushNamed(context, '/profile-screen');
+              break;
+          }
+        },
       ),
       body: _filteredCategories.isEmpty && _categories.isNotEmpty
           ? Center(

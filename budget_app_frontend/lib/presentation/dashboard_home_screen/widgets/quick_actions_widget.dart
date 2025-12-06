@@ -34,7 +34,8 @@ class QuickActionsWidget extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
+      child: SingleChildScrollView(
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -44,7 +45,7 @@ class QuickActionsWidget extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(height: 3.h),
+          SizedBox(height: 2.h),
           Row(
             children: [
               Expanded(
@@ -68,7 +69,7 @@ class QuickActionsWidget extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 3.h),
+          SizedBox(height: 2.h),
           Row(
             children: [
               Expanded(
@@ -93,6 +94,7 @@ class QuickActionsWidget extends StatelessWidget {
             ],
           ),
         ],
+        ),
       ),
     );
   }
@@ -107,7 +109,7 @@ class QuickActionsWidget extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
         child: Container(
-        padding: EdgeInsets.symmetric(vertical: 4.h, horizontal: 4.w),
+        padding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 4.w),
         decoration: BoxDecoration(
           color: color.withAlpha(26),
           borderRadius: BorderRadius.circular(12),

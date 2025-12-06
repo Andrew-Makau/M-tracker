@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../core/app_export.dart';
 import '../../services/auth_service.dart';
+import '../../widgets/app_bottom_nav.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -58,6 +59,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
       appBar: BrandAppBar(
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              AppRoutes.dashboardHome,
+              (route) => false,
+            );
+          },
+          icon: const Icon(Icons.home),
+        ),
         title: const Text('Profile'),
         actions: [
           IconButton(
@@ -70,7 +81,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: _loading
+          body: _loading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
               padding: EdgeInsets.all(5.w),
@@ -181,8 +192,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ],
               ),
-            ),
-    );
+                ),
+                bottomNavigationBar: const AppBottomNavWrapper(currentIndex: 3),
+              );
   }
 }
 
@@ -274,6 +286,39 @@ class _SettingTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Simple wrapper to avoid duplicating onTap routing logic here.
+class AppBottomNavWrapper extends StatelessWidget {
+  final int currentIndex;
+  const AppBottomNavWrapper({super.key, required this.currentIndex});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBottomNav(
+      currentIndex: currentIndex,
+      onTap: (index) {
+        switch (index) {
+          case 0:
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              AppRoutes.dashboardHome,
+              (route) => false,
+            );
+            break;
+          case 1:
+            Navigator.pushNamed(context, '/transaction-history-screen');
+            break;
+          case 2:
+            Navigator.pushNamed(context, '/budget-categories-screen');
+            break;
+          case 3:
+            // current screen
+            break;
+        }
+      },
     );
   }
 }

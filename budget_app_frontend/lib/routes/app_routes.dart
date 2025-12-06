@@ -7,6 +7,7 @@ import '../presentation/budget_categories_screen/budget_categories_screen.dart';
 import '../presentation/registration_screen/registration_screen.dart';
 import '../presentation/profile_screen/profile_screen.dart';
 import '../presentation/profile_screen/edit_profile_screen.dart';
+import '../presentation/reports_screen/reports_screen.dart';
 
 class AppRoutes {
   // TODO: Add your routes here
@@ -20,6 +21,7 @@ class AppRoutes {
   static const String signup = '/signup-screen';
   static const String profile = '/profile-screen';
   static const String editProfile = '/edit-profile-screen';
+  static const String reports = '/reports-screen';
 
   static Map<String, WidgetBuilder> routes = {
     initial: (context) => const LoginScreen(),
@@ -32,6 +34,7 @@ class AppRoutes {
   signup: (context) => const RegistrationScreen(),
     profile: (context) => const ProfileScreen(),
   editProfile: (context) => const EditProfileScreen(),
+    reports: (context) => const ReportsScreen(),
     // TODO: Add your other routes here
   };
 }

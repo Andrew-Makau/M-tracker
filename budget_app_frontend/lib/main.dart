@@ -97,7 +97,7 @@ class _MyAppState extends State<MyApp> {
           // Use the supported textScaleFactor field on MediaQueryData
           final mq = MediaQuery.of(context);
           return MediaQuery(
-            data: mq.copyWith(textScaleFactor: scale),
+            data: mq.copyWith(textScaler: TextScaler.linear(scale)),
             child: child!,
           );
         },
