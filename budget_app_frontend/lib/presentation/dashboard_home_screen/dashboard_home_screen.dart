@@ -423,9 +423,10 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
       appBar: BrandAppBar(
         backgroundColor: Colors.white,
         elevation: 2,
-        title: const Row(
+        leading: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            SizedBox(width: 12),
             SizedBox(
               height: 34,
               width: 34,
@@ -450,7 +451,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
             ),
           ],
         ),
-        leading: const SizedBox.shrink(),
+        title: null,
         actions: [
           IconButton(
             tooltip: _selectedDate == null

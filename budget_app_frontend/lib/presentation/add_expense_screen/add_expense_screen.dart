@@ -6,7 +6,6 @@ import 'package:sizer/sizer.dart';
 import '../../core/app_export.dart';
 import '../../widgets/brand_app_bar.dart';
 import '../../services/transaction_service.dart';
-import '../../widgets/app_bottom_nav.dart';
 
 // Palette constants (matching dashboard design system)
 const Color kBaseBackground = Color(0xFFF9FAFB);
@@ -560,7 +559,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen>
                                           '${selectedDate.month}/${selectedDate.day}/${selectedDate.year}',
                                           style: TextStyle(
                                             color: kBaseText,
-                                            fontSize: 14.sp,
+                                            fontSize: 12.sp,
                                           ),
                                         ),
                                       ],
@@ -635,29 +634,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen>
       ),
       floatingActionButton: _buildSaveButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      bottomNavigationBar: AppBottomNav(
-        currentIndex: -1, // No active tab for add screen
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                AppRoutes.dashboardHome,
-                (route) => false,
-              );
-              break;
-            case 1:
-              Navigator.pushNamed(context, '/transaction-history-screen');
-              break;
-            case 2:
-              Navigator.pushNamed(context, '/budget-categories-screen');
-              break;
-            case 3:
-              Navigator.pushNamed(context, '/reports-screen');
-              break;
-          }
-        },
-      ),
     );
   }
 

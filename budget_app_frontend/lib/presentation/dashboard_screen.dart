@@ -71,18 +71,22 @@ class DashboardScreen extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                // Stat cards grid
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isWide = constraints.maxWidth >= 900;
-                    final isMedium = constraints.maxWidth >= 600;
-                    final itemWidth =
-                        isWide ? (constraints.maxWidth - 16 * 3) / 4 : isMedium ? (constraints.maxWidth - 16) / 2 : constraints.maxWidth;
+                // Stat cards grid - centered with creative whitespace
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1200),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isWide = constraints.maxWidth >= 900;
+                        final isMedium = constraints.maxWidth >= 600;
+                        final itemWidth =
+                            isWide ? (constraints.maxWidth - 24 * 3) / 4 : isMedium ? (constraints.maxWidth - 24) / 2 : constraints.maxWidth;
 
-                    return Wrap(
-                      spacing: 16,
-                      runSpacing: 16,
-                      children: [
+                        return Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 24,
+                          runSpacing: 24,
+                          children: [
                         SizedBox(
                           width: itemWidth,
                           child: StatCard(
@@ -127,12 +131,14 @@ class DashboardScreen extends StatelessWidget {
                             variant: StatVariant.defaultVariant,
                           ),
                         ),
-                      ],
-                    );
-                  },
+                          ],
+                        );
+                      },
+                    ),
+                  ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
               ],
             ),
           ),
