@@ -49,26 +49,25 @@ class _BalanceCardWidgetState extends State<BalanceCardWidget>
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    const Color kPrimary = Color(0xFF29A385);
+    const Color kPrimaryText = Color(0xFFFFFFFF);
+    const Color kAccent = Color(0xFFECF9F5);
+    const Color kAccentText = Color(0xFF1F7A63);
     final tt = AppTheme.lightTheme.textTheme;
     return Container(
       width: double.infinity,
       margin: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
       padding: EdgeInsets.all(5.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppTheme.lightTheme.colorScheme.primary,
-            AppTheme.lightTheme.colorScheme.primary.withValues(alpha: 0.8),
-          ],
+          colors: [kPrimary, Color(0xFF238C73)],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color:
-                AppTheme.lightTheme.colorScheme.primary.withValues(alpha: 0.3),
+            color: kPrimary.withValues(alpha: 0.25),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -85,20 +84,9 @@ class _BalanceCardWidgetState extends State<BalanceCardWidget>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _greeting(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: tt.titleMedium?.copyWith(
-                        color: cs.onSurface,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16.sp,
-                      ),
-                    ),
-                    SizedBox(height: 0.6.h),
-                    Text(
                       'Total Balance',
                       style: tt.bodyMedium?.copyWith(
-                        color: cs.onSurfaceVariant,
+                        color: kPrimaryText.withValues(alpha: 0.9),
                         fontSize: 16.sp,
                       ),
                     ),
@@ -110,14 +98,14 @@ class _BalanceCardWidgetState extends State<BalanceCardWidget>
                 child: Container(
                   padding: EdgeInsets.all(2.w),
                   decoration: BoxDecoration(
-                    color: cs.secondaryContainer,
+                    color: Colors.white.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: CustomIconWidget(
                     iconName: widget.isBalanceVisible
                         ? 'visibility'
                         : 'visibility_off',
-                    color: cs.onSecondaryContainer,
+                    color: kPrimaryText,
                     size: 20,
                   ),
                 ),
@@ -130,7 +118,7 @@ class _BalanceCardWidgetState extends State<BalanceCardWidget>
             width: double.infinity,
             padding: EdgeInsets.symmetric(vertical: 2.h, horizontal: 3.w),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: Colors.white.withValues(alpha: 0.16),
               borderRadius: BorderRadius.circular(12),
             ),
             child: AnimatedBuilder(
@@ -143,7 +131,7 @@ class _BalanceCardWidgetState extends State<BalanceCardWidget>
                       ? '\$${widget.totalBalance.toStringAsFixed(2)}'
                       : '••••••',
                   style: tt.headlineSmall?.copyWith(
-                    color: cs.onSurface,
+                    color: kPrimaryText,
                     fontSize: 24.sp,
                     fontWeight: FontWeight.w700,
                   ),
@@ -158,7 +146,7 @@ class _BalanceCardWidgetState extends State<BalanceCardWidget>
             children: [
               CustomIconWidget(
                 iconName: widget.useLiveData ? 'trending_up' : 'data',
-                color: Colors.white,
+                color: kAccentText,
                 size: 16,
               ),
               SizedBox(width: 2.w),
@@ -168,7 +156,7 @@ class _BalanceCardWidgetState extends State<BalanceCardWidget>
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: tt.bodySmall?.copyWith(
-                    color: Colors.white,
+                    color: kAccentText,
                     fontSize: 14.sp,
                   ),
                 ),
@@ -178,13 +166,13 @@ class _BalanceCardWidgetState extends State<BalanceCardWidget>
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 0.8.w),
                   decoration: BoxDecoration(
-                    color: cs.secondaryContainer,
+                    color: kAccent,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     'MOCK',
                     style: tt.labelSmall?.copyWith(
-                      color: cs.onSecondaryContainer,
+                      color: kAccentText,
                       fontSize: 12.sp,
                       fontWeight: FontWeight.bold,
                     ),
@@ -198,19 +186,4 @@ class _BalanceCardWidgetState extends State<BalanceCardWidget>
     );
   }
 
-  String _greeting() {
-    final hour = DateTime.now().hour;
-    String salutation;
-    if (hour < 12) {
-      salutation = 'Good Morning';
-    } else if (hour < 17) {
-      salutation = 'Good Afternoon';
-    } else {
-      salutation = 'Good Evening';
-    }
-    if (widget.userName != null && widget.userName!.isNotEmpty) {
-      return '$salutation, ${widget.userName}!';
-    }
-    return salutation;
-  }
 }

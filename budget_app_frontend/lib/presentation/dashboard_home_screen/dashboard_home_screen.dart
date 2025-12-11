@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 // import 'package:sizer/sizer.dart';
@@ -11,9 +12,28 @@ import '../../widgets/app_bottom_nav.dart';
 // import 'package:dot_curved_bottom_nav/dot_curved_bottom_nav.dart'; // enable after pub get
 import '../../services/transaction_service.dart';
 import '../../services/auth_service.dart';
-import './widgets/balance_card_widget.dart';
 import './widgets/recent_transactions_widget.dart';
 import './widgets/spending_summary_widget.dart';
+import './widgets/summary_stat_card.dart';
+
+// Palette constants
+const Color kPrimary = Color(0xFF29A385);
+const Color kPrimaryText = Color(0xFFFFFFFF);
+const Color kSecondary = Color(0xFFEDF0F3);
+const Color kSecondaryText = Color(0xFF303A50);
+const Color kAccent = Color(0xFFECF9F5);
+const Color kAccentText = Color(0xFF1F7A63);
+const Color kBaseBackground = Color(0xFFF9FAFB);
+const Color kBaseText = Color(0xFF131720);
+const Color kCard = Color(0xFFFFFFFF);
+const Color kCardText = Color(0xFF131720);
+const Color kMuted = Color(0xFFE8EBEE);
+const Color kMutedText = Color(0xFF676F7E);
+const Color kDestructive = Color(0xFFDC2828);
+const Color kDestructiveText = Color(0xFFFFFFFF);
+const Color kBorder = Color(0xFFE0E5EB);
+const Color kInput = Color(0xFFE0E5EB);
+const Color kFocusRing = Color(0xFF29A385);
 
 class DashboardHomeScreen extends StatefulWidget {
   const DashboardHomeScreen({super.key});
@@ -28,7 +48,6 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
   late AnimationController _refreshAnimationController;
   late Animation<double> _refreshAnimation;
 
-  bool _isBalanceVisible = true;
   bool _isRefreshing = false;
   // int _selectedTabIndex = 0; // removed, unused
   int _currentPage = 0; // for dot curved nav
@@ -238,13 +257,6 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
     }
   }
 
-  void _toggleBalanceVisibility() {
-    setState(() {
-      _isBalanceVisible = !_isBalanceVisible;
-    });
-    HapticFeedback.lightImpact();
-  }
-
   void _handleAddExpense() {
     HapticFeedback.lightImpact();
     Navigator.pushNamed(
@@ -377,6 +389,19 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
     }
   }
 
+  String _formatAmount(double value) {
+    final bool isNegative = value < 0;
+    final double absVal = value.abs();
+    // Simplified formatting to avoid external deps
+    String formatted;
+    if (absVal >= 1000) {
+      formatted = absVal.toStringAsFixed(0);
+    } else {
+      formatted = absVal.toStringAsFixed(2);
+    }
+    return isNegative ? '-\$${formatted}' : '\$${formatted}';
+  }
+
   String _deriveNameFromEmail(String? email) {
     if (email == null || email.isEmpty) return _userName;
     final beforeAt = (email.split('@').isNotEmpty) ? email.split('@').first : email;
@@ -393,70 +418,74 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
+      backgroundColor: kBaseBackground,
       appBar: AppBar(
-        title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-        ),
-        leading: Builder(
-          builder: (context) => IconButton(
-            tooltip: 'Quick Actions',
-            icon: const Icon(Icons.grid_view, color: Colors.white),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.secondary,
-              ],
-            ),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x33000000),
-                blurRadius: 12,
-                offset: Offset(0, 4),
+        backgroundColor: Colors.white,
+        elevation: 2,
+        shadowColor: Colors.black12,
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 34,
+              width: 34,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: kPrimary,
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
+                child: Center(
+                  child: Icon(Icons.account_balance_wallet_outlined, color: Colors.white, size: 18),
+                ),
               ),
-            ],
-          ),
+            ),
+            SizedBox(width: 10),
+            Text(
+              'BudgetFlow',
+              style: TextStyle(
+                color: kBaseText,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
         ),
+        iconTheme: const IconThemeData(color: kBaseText),
+        actionsIconTheme: const IconThemeData(color: kBaseText),
+        leadingWidth: 0,
+        leading: const SizedBox.shrink(),
         actions: [
-          // Date picker for indexed search by day
           IconButton(
             tooltip: _selectedDate == null
                 ? 'Pick Date'
                 : 'Selected: ${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}',
-            icon: const Icon(Icons.calendar_month, color: Colors.white),
+            icon: const Icon(Icons.calendar_month),
             onPressed: _pickDate,
           ),
-          // Settings
           IconButton(
             tooltip: 'Settings',
-            icon: const Icon(Icons.settings, color: Colors.white),
+            icon: const Icon(Icons.settings),
             onPressed: () => Navigator.pushNamed(context, '/profile-screen'),
           ),
-          // Live/Mock toggle
           IconButton(
             tooltip: _useLiveData ? 'Live Data: ON' : 'Live Data: OFF',
-            icon: Icon(_useLiveData ? Icons.wifi : Icons.storage, color: Colors.white),
+            icon: Icon(_useLiveData ? Icons.wifi : Icons.storage, color: kBaseText),
             onPressed: _toggleLiveData,
           ),
-          // Removed Add Expense and Add Income from AppBar actions
-          // Removed Budgets, Reports, and History icons from AppBar
+          Builder(
+            builder: (ctx) => IconButton(
+              tooltip: 'Quick Actions',
+              icon: const Icon(Icons.grid_view),
+              onPressed: () => Scaffold.of(ctx).openEndDrawer(),
+            ),
+          ),
         ],
       ),
-      drawer: Drawer(
+      endDrawer: Drawer(
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
-            topRight: Radius.circular(20),
-            bottomRight: Radius.circular(20),
+            topLeft: Radius.circular(20),
+            bottomLeft: Radius.circular(20),
           ),
         ),
         child: SafeArea(
@@ -555,79 +584,78 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
           ),
         ),
       ),
-      body: SafeArea(
-            child: Column(
-          children: [
-            // Header moved to AppTopBar
-
-            // Main Content
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: _handleRefresh,
-                color: AppTheme.lightTheme.primaryColor,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final isWide = constraints.maxWidth >= 800;
-                      final tileSpacing = kSpacingM;
-                      return Wrap(
-                        spacing: tileSpacing,
-                        runSpacing: tileSpacing,
-                        alignment: WrapAlignment.start,
-                        children: [
-                      SizedBox(height: kSpacingM),
-                          // Balance Card (full-width or half on wide)
-                          SizedBox(
-                            width: isWide ? (constraints.maxWidth - tileSpacing) / 2 : constraints.maxWidth,
-                            child: Builder(builder: (context) {
-                              double displayedBalance = _totalBalance;
-                              if (_useLiveData) {
-                                if (_liveIncome != null && _liveSpent != null) {
-                                  displayedBalance = (_liveIncome ?? 0.0) - (_liveSpent ?? 0.0);
-                                } else if (_recentTransactions.isNotEmpty) {
-                                  double sum = 0.0;
-                                    final Iterable<Map<String, dynamic>> sourceTx = _selectedDate == null
-                                      ? _recentTransactions
-                                      : _recentTransactions.where((tx) {
-                                        final DateTime d = (tx['date'] is DateTime)
-                                          ? tx['date'] as DateTime
-                                          : DateTime.tryParse(tx['date'].toString()) ?? DateTime.now();
-                                        return d.year == _selectedDate!.year &&
-                                          d.month == _selectedDate!.month &&
-                                          d.day == _selectedDate!.day;
-                                      });
-                                  for (final tx in sourceTx) {
-                                    final amt = (tx['amount'] is num) ? (tx['amount'] as num).toDouble() : 0.0;
-                                    final type = (tx['type'] ?? 'expense').toString().toLowerCase();
-                                    if (type == 'income') {
-                                      sum += amt;
-                                    } else {
-                                      sum -= amt;
-                                    }
-                                  }
-                                  displayedBalance = sum;
-                                }
-                              }
-                              return BalanceCardWidget(
-                                totalBalance: displayedBalance,
-                                isBalanceVisible: _isBalanceVisible,
-                                onToggleVisibility: _toggleBalanceVisibility,
-                                useLiveData: _useLiveData,
-                                userName: _userName,
-                              );
-                            }),
+      body: Stack(
+        children: [
+          // Glassmorphism background layer
+          const Positioned.fill(child: _GlassBackground()),
+          SafeArea(
+            child: RefreshIndicator(
+              onRefresh: _handleRefresh,
+              color: AppTheme.lightTheme.primaryColor,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isWide = constraints.maxWidth >= 800;
+                    final tileSpacing = kSpacingM;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Greeting moved under AppBar, now scrolls with content
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _greeting(),
+                                    style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
+                                      color: kBaseText,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _formattedDateTime(),
+                                    style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+                                      color: kMutedText,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              GestureDetector(
+                                onTap: () => Navigator.pushNamed(context, '/profile-screen'),
+                                child: CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: kPrimary,
+                                  child: Text(
+                                    _userInitial(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
+                        ),
 
-                          // Quick Actions moved to AppBar actions
-
-                          // Spending Summary (tile)
-                          SizedBox(
-                            width: isWide ? (constraints.maxWidth - tileSpacing) / 2 : constraints.maxWidth,
-                            child: Builder(builder: (context) {
-                              double computedSpent = _spentAmount;
-                              List<Map<String, dynamic>> computedBreakdown = List<Map<String, dynamic>>.from(_categoryBreakdown);
-                              final List<Map<String, dynamic>> filteredTx = _selectedDate == null
+                        SizedBox(height: kSpacingM),
+                        Wrap(
+                          spacing: tileSpacing,
+                          runSpacing: tileSpacing,
+                          alignment: WrapAlignment.start,
+                          children: [
+                            Builder(builder: (context) {
+                              final Iterable<Map<String, dynamic>> filteredTx = _selectedDate == null
                                   ? _recentTransactions
                                   : _recentTransactions.where((tx) {
                                       final DateTime d = (tx['date'] is DateTime)
@@ -636,106 +664,218 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
                                       return d.year == _selectedDate!.year &&
                                           d.month == _selectedDate!.month &&
                                           d.day == _selectedDate!.day;
-                                    }).toList();
+                                    });
 
-                              if (_useLiveData && filteredTx.isNotEmpty) {
-                                double spent = (_liveSpent != null) ? _liveSpent! : 0.0;
-                                final Map<String, double> catSums = {};
-                                final Map<String, Color> catColors = {};
-                                if (_liveSpent == null) {
-                                  for (final tx in filteredTx) {
-                                    final amt = (tx['amount'] is num) ? (tx['amount'] as num).toDouble() : 0.0;
-                                    final type = (tx['type'] ?? 'expense').toString().toLowerCase();
-                                    final catName = (tx['category'] ?? 'Uncategorized').toString();
-                                    final catColor = (tx['categoryColor'] is Color) ? tx['categoryColor'] as Color : Theme.of(context).dividerColor;
-                                    if (type == 'expense') {
-                                      spent += amt;
-                                      catSums[catName] = (catSums[catName] ?? 0.0) + amt;
-                                      catColors[catName] = catColor;
-                                    }
+                              double income = _liveIncome ?? 0.0;
+                              double expenses = _liveSpent ?? 0.0;
+                              if (_liveIncome == null || _liveSpent == null) {
+                                income = 0.0;
+                                expenses = 0.0;
+                                for (final tx in filteredTx) {
+                                  final amt = (tx['amount'] is num) ? (tx['amount'] as num).toDouble() : 0.0;
+                                  final type = (tx['type'] ?? 'expense').toString().toLowerCase();
+                                  if (type == 'income') {
+                                    income += amt;
+                                  } else {
+                                    expenses += amt;
                                   }
-                                  computedSpent = spent;
-                                  computedBreakdown = catSums.entries.map((e) {
-                                    return {
-                                      'name': e.key,
-                                      'amount': e.value,
-                                      'color': catColors[e.key] ?? Theme.of(context).dividerColor,
-                                    };
-                                  }).toList()
-                                    ..sort((a, b) => (b['amount'] as double).compareTo(a['amount'] as double));
-                                } else {
-                                  final Map<String, double> localCatSums = {};
-                                  final Map<String, Color> localCatColors = {};
-                                  for (final tx in filteredTx) {
-                                    final amt = (tx['amount'] is num) ? (tx['amount'] as num).toDouble() : 0.0;
-                                    final type = (tx['type'] ?? 'expense').toString().toLowerCase();
-                                    final catName = (tx['category'] ?? 'Uncategorized').toString();
-                                    final catColor = (tx['categoryColor'] is Color) ? tx['categoryColor'] as Color : Theme.of(context).dividerColor;
-                                    if (type == 'expense') {
-                                      localCatSums[catName] = (localCatSums[catName] ?? 0.0) + amt;
-                                      localCatColors[catName] = catColor;
-                                    }
-                                  }
-                                  computedBreakdown = localCatSums.entries.map((e) {
-                                    return {
-                                      'name': e.key,
-                                      'amount': e.value,
-                                      'color': localCatColors[e.key] ?? Theme.of(context).dividerColor,
-                                    };
-                                  }).toList()
-                                    ..sort((a, b) => (b['amount'] as double).compareTo(a['amount'] as double));
                                 }
                               }
-                              return SpendingSummaryWidget(
-                                monthlyBudget: _monthlyBudget,
-                                spentAmount: computedSpent,
-                                categoryBreakdown: computedBreakdown,
+
+                              double displayedBalance = income - expenses;
+                              if (!_useLiveData && displayedBalance == 0.0) {
+                                displayedBalance = _totalBalance;
+                              }
+
+                              final double savingsRate = income > 0
+                                  ? ((income - expenses) / income).clamp(0.0, 1.0)
+                                  : 0.68;
+
+                              // Force a 2x2 grid even on mobile; tighten aspect on narrow widths to avoid overflow
+                              final int crossAxisCount = 2;
+                              final double aspectRatio = constraints.maxWidth < 420 ? 1.05 : 1.3;
+                              final cards = <SummaryStatCard>[
+                                SummaryStatCard(
+                                  title: 'Current Balance',
+                                  value: _formatAmount(displayedBalance),
+                                  changeText: '+12.5% from last month',
+                                  changeColor: Colors.white,
+                                  gradient: const [Color(0xFF1FB887), Color(0xFF16A084)],
+                                  icon: Icons.account_balance_wallet_rounded,
+                                  iconBg: Colors.white24,
+                                  titleColor: Colors.white,
+                                  valueColor: Colors.white,
+                                  subtleShadow: true,
+                                ),
+                                SummaryStatCard(
+                                  title: 'Total Income',
+                                  value: _formatAmount(income),
+                                  changeText: '+8.2% from last month',
+                                  changeColor: const Color(0xFF1F7A63),
+                                  gradient: const [Color(0xFFF7FFFB), Color(0xFFECF9F5)],
+                                  icon: Icons.trending_up_rounded,
+                                  iconBg: const Color(0xFFD9F3E7),
+                                  titleColor: kBaseText,
+                                  valueColor: kBaseText,
+                                  borderColor: const Color(0xFFE0E5EB),
+                                ),
+                                SummaryStatCard(
+                                  title: 'Total Expenses',
+                                  value: _formatAmount(expenses),
+                                  changeText: '+3.1% from last month',
+                                  changeColor: const Color(0xFFDE3B3B),
+                                  gradient: const [Color(0xFFFCECEC), Color(0xFFF8E5E5)],
+                                  icon: Icons.trending_down_rounded,
+                                  iconBg: const Color(0xFFF4D8D8),
+                                  titleColor: kBaseText,
+                                  valueColor: const Color(0xFF0F172A),
+                                  borderColor: const Color(0xFFE0E5EB),
+                                ),
+                                SummaryStatCard(
+                                  title: 'Savings Goal',
+                                  value: '${(savingsRate * 100).round()}%',
+                                  changeText: '+5.4% from last month',
+                                  changeColor: const Color(0xFF1F7A63),
+                                  gradient: const [Colors.white],
+                                  icon: Icons.savings_rounded,
+                                  iconBg: const Color(0xFFE9EDF5),
+                                  titleColor: kMutedText,
+                                  valueColor: kBaseText,
+                                  borderColor: const Color(0xFFE0E5EB),
+                                  subtleShadow: false,
+                                ),
+                              ];
+
+                              return SizedBox(
+                                width: constraints.maxWidth,
+                                child: GridView.count(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  crossAxisCount: crossAxisCount,
+                                  mainAxisSpacing: tileSpacing,
+                                  crossAxisSpacing: tileSpacing,
+                                  childAspectRatio: aspectRatio,
+                                  children: cards,
+                                ),
                               );
                             }),
-                          ),
 
-                          // Recent Transactions (full-width tile)
-                          SizedBox(
-                            width: constraints.maxWidth,
-                            child: Column(
-                              children: [
-                                if (_isLoadingLive)
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(vertical: kSpacingS),
-                                    child: LinearProgressIndicator(
-                                      minHeight: 4,
-                                      color: AppTheme.lightTheme.primaryColor,
-                                    ),
-                                  ),
-                                RecentTransactionsWidget(
-                                  transactions: _selectedDate == null
-                                      ? _recentTransactions
-                                      : _recentTransactions.where((tx) {
-                                          final DateTime d = (tx['date'] is DateTime)
-                                              ? tx['date'] as DateTime
-                                              : DateTime.tryParse(tx['date'].toString()) ?? DateTime.now();
-                                          return d.year == _selectedDate!.year &&
-                                              d.month == _selectedDate!.month &&
-                                              d.day == _selectedDate!.day;
-                                        }).toList(),
-                                  onEditTransaction: _handleEditTransaction,
-                                  onDeleteTransaction: _handleDeleteTransaction,
-                                  onCategorizeTransaction: _handleCategorizeTransaction,
-                                ),
-                              ],
+                            // Spending Summary (tile)
+                            SizedBox(
+                              width: isWide ? (constraints.maxWidth - tileSpacing) / 2 : constraints.maxWidth,
+                              child: Builder(builder: (context) {
+                                double computedSpent = _spentAmount;
+                                List<Map<String, dynamic>> computedBreakdown = List<Map<String, dynamic>>.from(_categoryBreakdown);
+                                final List<Map<String, dynamic>> filteredTx = _selectedDate == null
+                                    ? _recentTransactions
+                                    : _recentTransactions.where((tx) {
+                                        final DateTime d = (tx['date'] is DateTime)
+                                            ? tx['date'] as DateTime
+                                            : DateTime.tryParse(tx['date'].toString()) ?? DateTime.now();
+                                        return d.year == _selectedDate!.year &&
+                                            d.month == _selectedDate!.month &&
+                                            d.day == _selectedDate!.day;
+                                      }).toList();
+
+                                if (_useLiveData && filteredTx.isNotEmpty) {
+                                  double spent = (_liveSpent != null) ? _liveSpent! : 0.0;
+                                  final Map<String, double> catSums = {};
+                                  final Map<String, Color> catColors = {};
+                                  if (_liveSpent == null) {
+                                    for (final tx in filteredTx) {
+                                      final amt = (tx['amount'] is num) ? (tx['amount'] as num).toDouble() : 0.0;
+                                      final type = (tx['type'] ?? 'expense').toString().toLowerCase();
+                                      final catName = (tx['category'] ?? 'Uncategorized').toString();
+                                      final catColor = (tx['categoryColor'] is Color) ? tx['categoryColor'] as Color : Theme.of(context).dividerColor;
+                                      if (type == 'expense') {
+                                        spent += amt;
+                                        catSums[catName] = (catSums[catName] ?? 0.0) + amt;
+                                        catColors[catName] = catColor;
+                                      }
+                                    }
+                                    computedSpent = spent;
+                                    computedBreakdown = catSums.entries.map((e) {
+                                      return {
+                                        'name': e.key,
+                                        'amount': e.value,
+                                        'color': catColors[e.key] ?? Theme.of(context).dividerColor,
+                                      };
+                                    }).toList()
+                                      ..sort((a, b) => (b['amount'] as double).compareTo(a['amount'] as double));
+                                  } else {
+                                    final Map<String, double> localCatSums = {};
+                                    final Map<String, Color> localCatColors = {};
+                                    for (final tx in filteredTx) {
+                                      final amt = (tx['amount'] is num) ? (tx['amount'] as num).toDouble() : 0.0;
+                                      final type = (tx['type'] ?? 'expense').toString().toLowerCase();
+                                      final catName = (tx['category'] ?? 'Uncategorized').toString();
+                                      final catColor = (tx['categoryColor'] is Color) ? tx['categoryColor'] as Color : Theme.of(context).dividerColor;
+                                      if (type == 'expense') {
+                                        localCatSums[catName] = (localCatSums[catName] ?? 0.0) + amt;
+                                        localCatColors[catName] = catColor;
+                                      }
+                                    }
+                                    computedBreakdown = localCatSums.entries.map((e) {
+                                      return {
+                                        'name': e.key,
+                                        'amount': e.value,
+                                        'color': localCatColors[e.key] ?? Theme.of(context).dividerColor,
+                                      };
+                                    }).toList()
+                                      ..sort((a, b) => (b['amount'] as double).compareTo(a['amount'] as double));
+                                  }
+                                }
+                                return SpendingSummaryWidget(
+                                  monthlyBudget: _monthlyBudget,
+                                  spentAmount: computedSpent,
+                                  categoryBreakdown: computedBreakdown,
+                                );
+                              }),
                             ),
-                          ),
 
-                          SizedBox(width: constraints.maxWidth, height: kSpacingXL),
-                        ],
-                      );
-                    },
-                  ),
+                            // Recent Transactions (full-width tile)
+                            SizedBox(
+                              width: constraints.maxWidth,
+                              child: Column(
+                                children: [
+                                  if (_isLoadingLive)
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(vertical: kSpacingS),
+                                      child: LinearProgressIndicator(
+                                        minHeight: 4,
+                                        color: AppTheme.lightTheme.primaryColor,
+                                      ),
+                                    ),
+                                  RecentTransactionsWidget(
+                                    transactions: _selectedDate == null
+                                        ? _recentTransactions
+                                        : _recentTransactions.where((tx) {
+                                            final DateTime d = (tx['date'] is DateTime)
+                                                ? tx['date'] as DateTime
+                                                : DateTime.tryParse(tx['date'].toString()) ?? DateTime.now();
+                                            return d.year == _selectedDate!.year &&
+                                                d.month == _selectedDate!.month &&
+                                                d.day == _selectedDate!.day;
+                                          }).toList(),
+                                    onEditTransaction: _handleEditTransaction,
+                                    onDeleteTransaction: _handleDeleteTransaction,
+                                    onCategorizeTransaction: _handleCategorizeTransaction,
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            SizedBox(width: constraints.maxWidth, height: kSpacingXL),
+                          ],
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
 
       // Bottom Tab Navigation
@@ -785,6 +925,107 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
 
   // removed unused helper
 
+  String _greeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good Morning, ${_userName}!';
+    if (hour < 17) return 'Good Afternoon, ${_userName}!';
+    return 'Good Evening, ${_userName}!';
+  }
+
+  String _formattedDateTime() {
+    final now = DateTime.now();
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+    final month = monthNames[now.month - 1];
+    final day = now.day.toString();
+    final year = now.year.toString();
+    final hour12 = now.hour % 12 == 0 ? 12 : now.hour % 12;
+    final minute = now.minute.toString().padLeft(2, '0');
+    final amPm = now.hour >= 12 ? 'PM' : 'AM';
+    final tz = now.timeZoneName; // e.g., EAT / GMT+3
+    return '$month $day, $year · $hour12:$minute $amPm $tz';
+  }
+
+  String _userInitial() {
+    final trimmed = _userName.trim();
+    if (trimmed.isEmpty) return 'A';
+    return trimmed[0].toUpperCase();
+  }
+
+  // unused legacy bottom-sheet quick actions removed
+
+}
+
+class _GlassBackground extends StatelessWidget {
+  const _GlassBackground({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Soft gradient base
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFFEEF7FF), Color(0xFFFFFFFF)],
+            ),
+          ),
+        ),
+
+        // Backdrop blur with translucent overlay to create glass effect
+        Positioned.fill(
+          child: ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 24.0, sigmaY: 24.0),
+              child: Container(
+                color: Colors.white.withOpacity(0.06),
+              ),
+            ),
+          ),
+        ),
+
+        // Decorative soft circles (subtle highlights)
+        Positioned(
+          left: -60,
+          top: -40,
+          child: Container(
+            width: 220,
+            height: 220,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(colors: [Colors.white.withOpacity(0.14), Colors.transparent]),
+            ),
+          ),
+        ),
+        Positioned(
+          right: -80,
+          bottom: -60,
+          child: Container(
+            width: 260,
+            height: 260,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(colors: [Colors.white.withOpacity(0.12), Colors.transparent]),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _QuickActionButton extends StatelessWidget {

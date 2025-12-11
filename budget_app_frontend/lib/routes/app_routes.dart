@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../presentation/add_expense_screen/add_expense_screen.dart';
 import '../presentation/transaction_history_screen/transaction_history_screen.dart';
 import '../presentation/dashboard_home_screen/dashboard_home_screen.dart';
+import '../presentation/dashboard_screen.dart';
 import '../presentation/login_screen/login_screen.dart';
 import '../presentation/budget_categories_screen/budget_categories_screen.dart';
 import '../presentation/registration_screen/registration_screen.dart';
@@ -22,12 +23,14 @@ class AppRoutes {
   static const String profile = '/profile-screen';
   static const String editProfile = '/edit-profile-screen';
   static const String reports = '/reports-screen';
+  static const String dashboard = '/dashboard-screen';
 
   static Map<String, WidgetBuilder> routes = {
     initial: (context) => const LoginScreen(),
     addExpense: (context) => const AddExpenseScreen(),
     transactionHistory: (context) => const TransactionHistoryScreen(),
     dashboardHome: (context) => const DashboardHomeScreen(),
+    dashboard: (context) => DashboardScreen(),
     login: (context) => const LoginScreen(),
     budgetCategories: (context) => const BudgetCategoriesScreen(),
     registration: (context) => const RegistrationScreen(),

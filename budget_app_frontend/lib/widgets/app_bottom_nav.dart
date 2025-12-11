@@ -13,26 +13,28 @@ class AppBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(28), // slightly larger radius to prevent overlap
-        clipBehavior: Clip.hardEdge,
-        child: Container(
-          // Outer container to apply shadow and rounded clip
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.shadowLight,
-                blurRadius: 16,
-                offset: const Offset(0, -4),
-              ),
-            ],
+      child: Stack(
+        clipBehavior: Clip.none, // allow the active circle to render fully
+        children: [
+          Container(
+            height: 58,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary, // bar background with rounded corners
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.shadowLight,
+                  blurRadius: 16,
+                  offset: const Offset(0, -4),
+                ),
+              ],
+            ),
           ),
-          child: CurvedNavigationBar(
-            height: 64,
-            // Transparent to avoid edge artifacts against vibrant background
+          CurvedNavigationBar(
+            height: 58,
             backgroundColor: Colors.transparent,
-            color: Theme.of(context).colorScheme.primary, // grey bar
-            buttonBackgroundColor: Theme.of(context).colorScheme.secondary, // orange active bubble
+            color: Colors.transparent, // use the container for the bar paint and rounding
+            buttonBackgroundColor: const Color(0xFF29A385),
             animationCurve: Curves.easeOutCubic,
             animationDuration: const Duration(milliseconds: 240),
             items: [
@@ -40,28 +42,28 @@ class AppBottomNav extends StatelessWidget {
                 Icons.home,
                 size: 30,
                 color: currentIndex == 0
-                    ? Theme.of(context).colorScheme.primary
+                    ? Theme.of(context).colorScheme.onPrimary
                     : Colors.white70,
               ),
               Icon(
                 Icons.history,
                 size: 30,
                 color: currentIndex == 1
-                    ? Theme.of(context).colorScheme.primary
+                    ? Theme.of(context).colorScheme.onPrimary
                     : Colors.white70,
               ),
               Icon(
                 Icons.pie_chart,
                 size: 30,
                 color: currentIndex == 2
-                    ? Theme.of(context).colorScheme.primary
+                    ? Theme.of(context).colorScheme.onPrimary
                     : Colors.white70,
               ),
               Icon(
                 Icons.bar_chart,
                 size: 30,
                 color: currentIndex == 3
-                    ? Theme.of(context).colorScheme.primary
+                    ? Theme.of(context).colorScheme.onPrimary
                     : Colors.white70,
               ),
             ],
@@ -71,7 +73,7 @@ class AppBottomNav extends StatelessWidget {
               onTap(index);
             },
           ),
-        ),
+        ],
       ),
     );
   }
