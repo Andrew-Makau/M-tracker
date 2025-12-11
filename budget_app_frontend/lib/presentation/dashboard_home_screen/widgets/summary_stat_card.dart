@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 class SummaryStatCard extends StatelessWidget {
@@ -33,27 +33,34 @@ class SummaryStatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool useBorder = gradient.length == 1 && borderColor != null;
     return Container(
-      constraints: const BoxConstraints(minHeight: 115),
-      padding: EdgeInsets.symmetric(horizontal: 3.5.w, vertical: 2.5.w),
+      constraints: const BoxConstraints(minHeight: 92),
+      padding: EdgeInsets.symmetric(horizontal: 3.5.w, vertical: 2.0.w),
       decoration: BoxDecoration(
-        gradient: gradient.length > 1 ? LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight) : null,
+        gradient: gradient.length > 1
+            ? LinearGradient(
+                colors: gradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null,
         color: gradient.length == 1 ? gradient.first : null,
         borderRadius: BorderRadius.circular(16),
         border: useBorder ? Border.all(color: borderColor!.withOpacity(0.4)) : null,
         boxShadow: subtleShadow
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  color: Colors.black.withOpacity(0.10),
+                  blurRadius: 3.0,
+                  spreadRadius: 0.0,
+                  offset: const Offset(0, 1),
                 ),
               ]
             : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -64,7 +71,7 @@ class SummaryStatCard extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: titleColor,
                         fontWeight: FontWeight.w700,
-                        fontSize: 12.sp,
+                        fontSize: 15.sp,
                       ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -76,24 +83,35 @@ class SummaryStatCard extends StatelessWidget {
                   color: iconBg,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, size: 15.sp, color: titleColor.withOpacity(0.9)),
+                child: Icon(icon, size: 16.sp, color: titleColor.withOpacity(0.9)),
               ),
             ],
           ),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: valueColor,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 20.sp,
-                ),
+          const SizedBox(height: 1),
+          Flexible(
+            fit: FlexFit.loose,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: valueColor,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 30.sp,
+                    ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ),
+          const SizedBox(height: 1),
           Text(
             changeText,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: changeColor,
                   fontWeight: FontWeight.w600,
-                  fontSize: 11.sp,
+                  fontSize: 13.sp,
                 ),
           ),
         ],

@@ -693,7 +693,8 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
 
                               // Force a 2x2 grid even on mobile; tighten aspect on narrow widths to avoid overflow
                               final int crossAxisCount = 2;
-                              final double aspectRatio = constraints.maxWidth < 420 ? 1.05 : 1.3;
+                              // Make cards wider relative to height so they appear shorter on screen
+                              final double aspectRatio = constraints.maxWidth < 420 ? 2.8 : 3.2;
                               final cards = <SummaryStatCard>[
                                 SummaryStatCard(
                                   title: 'Current Balance',
