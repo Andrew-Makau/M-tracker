@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
-import './widgets/animated_gradient_background.dart';
 import './widgets/app_logo.dart';
 import './widgets/biometric_button.dart';
 import './widgets/floating_input_field.dart';
@@ -261,9 +260,20 @@ class _LoginScreenState extends State<LoginScreen>
     return Scaffold(
       body: Stack(
         children: [
-          // Animated gradient background
-          const Positioned.fill(
-            child: AnimatedGradientBackground(),
+          // Solid white background with subtle green tint
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white,
+                    AppTheme.lightTheme.colorScheme.primary.withValues(alpha: 0.03),
+                  ],
+                ),
+              ),
+            ),
           ),
 
           // Main content
@@ -306,7 +316,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   style: AppTheme
                                       .lightTheme.textTheme.headlineMedium
                                       ?.copyWith(
-                                    color: Theme.of(context).colorScheme.onPrimary,
+                                    color: AppTheme.lightTheme.colorScheme.onSurface,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -315,7 +325,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   'Sign in to continue managing your budget',
                                   style: AppTheme.lightTheme.textTheme.bodyLarge
                                       ?.copyWith(
-                                    color: Theme.of(context).colorScheme.onPrimary.withAlpha(204),
+                                    color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -343,7 +353,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   style: AppTheme
                                       .lightTheme.textTheme.bodyMedium
                                       ?.copyWith(
-                                    color: Theme.of(context).colorScheme.onPrimary.withAlpha(178),
+                                    color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                               ],
@@ -361,9 +371,9 @@ class _LoginScreenState extends State<LoginScreen>
                             child: Row(
                               children: [
                                 Expanded(
-                                    child: Container(
+                                  child: Container(
                                     height: 1,
-                                    color: Theme.of(context).colorScheme.onPrimary.withAlpha(77),
+                                    color: AppTheme.lightTheme.colorScheme.primary.withValues(alpha: 0.25),
                                   ),
                                 ),
                                 Padding(
@@ -374,14 +384,14 @@ class _LoginScreenState extends State<LoginScreen>
                                     style: AppTheme
                                         .lightTheme.textTheme.bodyMedium
                                         ?.copyWith(
-                                      color: Theme.of(context).colorScheme.onPrimary.withAlpha(178),
+                                      color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ),
                                 Expanded(
                                   child: Container(
                                     height: 1,
-                                    color: Colors.white.withValues(alpha: 0.3),
+                                    color: AppTheme.lightTheme.colorScheme.primary.withValues(alpha: 0.15),
                                   ),
                                 ),
                               ],
@@ -458,19 +468,19 @@ class _LoginScreenState extends State<LoginScreen>
                                             fillColor:
                                                 WidgetStateProperty.resolveWith((states) {
                                               if (states.contains(WidgetState.selected)) {
-                                                return Theme.of(context).colorScheme.onPrimary;
+                                                return AppTheme.lightTheme.colorScheme.primary;
                                               }
                                               return Colors.transparent;
                                             }),
-                                            checkColor: AppTheme.lightTheme.colorScheme.primary,
-                                            side: BorderSide(color: Theme.of(context).colorScheme.onPrimary, width: 2),
+                                            checkColor: Colors.white,
+                                            side: BorderSide(color: AppTheme.lightTheme.colorScheme.primary, width: 2),
                                           ),
                                           Flexible(
                                             child: Text(
                                               'Remember me',
                                               overflow: TextOverflow.ellipsis,
                                               style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                                                color: Theme.of(context).colorScheme.onPrimary.withAlpha(204),
+                                                color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
                                               ),
                                             ),
                                           ),
@@ -484,13 +494,13 @@ class _LoginScreenState extends State<LoginScreen>
                                             // Navigate to forgot password screen
                                           },
                                           child: Text(
-                                              'Forgot Password?',
-                                              overflow: TextOverflow.ellipsis,
-                                              style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                                                color: Theme.of(context).colorScheme.onPrimary,
-                                                fontWeight: FontWeight.w600,
-                                              ),
+                                            'Forgot Password?',
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+                                              color: AppTheme.lightTheme.colorScheme.primary,
+                                              fontWeight: FontWeight.w600,
                                             ),
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -513,19 +523,19 @@ class _LoginScreenState extends State<LoginScreen>
                                             fillColor:
                                                 WidgetStateProperty.resolveWith((states) {
                                               if (states.contains(WidgetState.selected)) {
-                                                return Theme.of(context).colorScheme.onPrimary;
+                                                return AppTheme.lightTheme.colorScheme.primary;
                                               }
                                               return Colors.transparent;
                                             }),
-                                            checkColor: AppTheme.lightTheme.colorScheme.primary,
-                                            side: BorderSide(color: Theme.of(context).colorScheme.onPrimary, width: 2),
+                                            checkColor: Colors.white,
+                                            side: BorderSide(color: AppTheme.lightTheme.colorScheme.primary, width: 2),
                                           ),
                                           Flexible(
                                             child: Text(
                                               'Remember me',
                                               overflow: TextOverflow.ellipsis,
                                               style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                                                color: Colors.white.withValues(alpha: 0.8),
+                                                color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
                                               ),
                                             ),
                                           ),
@@ -538,13 +548,13 @@ class _LoginScreenState extends State<LoginScreen>
                                         // Navigate to forgot password screen
                                       },
                                         child: Text(
-                                        'Forgot Password?',
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                                          color: Theme.of(context).colorScheme.onPrimary,
-                                          fontWeight: FontWeight.w600,
+                                          'Forgot Password?',
+                                          overflow: TextOverflow.ellipsis,
+                                          style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+                                            color: AppTheme.lightTheme.colorScheme.primary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
-                                      ),
                                     ),
                                   ],
                                 );
@@ -581,8 +591,8 @@ class _LoginScreenState extends State<LoginScreen>
                                 SocialLoginButton(
                                   text: 'Continue with Google',
                                   iconName: 'g_translate',
-                                  backgroundColor: Theme.of(context).colorScheme.onPrimary,
-                                  textColor: Theme.of(context).colorScheme.onPrimary == Colors.white ? Colors.black87 : Colors.black87,
+                                  backgroundColor: Colors.white,
+                                  textColor: Colors.black87,
                                   onPressed: () => _handleSocialLogin('google'),
                                   isLoading: _isGoogleLoading,
                                 ),
@@ -623,7 +633,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   style: AppTheme
                                       .lightTheme.textTheme.bodyMedium
                                       ?.copyWith(
-                                    color: Theme.of(context).colorScheme.onPrimary.withAlpha(178),
+                                    color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                                 TextButton(
@@ -636,10 +646,10 @@ class _LoginScreenState extends State<LoginScreen>
                                     style: AppTheme
                                         .lightTheme.textTheme.bodyMedium
                                         ?.copyWith(
-                                      color: Theme.of(context).colorScheme.onPrimary,
+                                      color: AppTheme.lightTheme.colorScheme.primary,
                                       fontWeight: FontWeight.w600,
                                       decoration: TextDecoration.underline,
-                                      decorationColor: Theme.of(context).colorScheme.onPrimary,
+                                      decorationColor: AppTheme.lightTheme.colorScheme.primary,
                                     ),
                                   ),
                                 ),

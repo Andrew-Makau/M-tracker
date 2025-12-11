@@ -31,7 +31,7 @@ class SummaryStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool useBorder = gradient.length == 1 && borderColor != null;
+    final bool useBorder = borderColor != null;
     return Container(
       constraints: const BoxConstraints(minHeight: 92),
       padding: EdgeInsets.symmetric(horizontal: 3.5.w, vertical: 2.0.w),
@@ -45,7 +45,7 @@ class SummaryStatCard extends StatelessWidget {
             : null,
         color: gradient.length == 1 ? gradient.first : null,
         borderRadius: BorderRadius.circular(16),
-        border: useBorder ? Border.all(color: borderColor!.withOpacity(0.4)) : null,
+        border: useBorder ? Border.all(color: borderColor!, width: 1) : null,
         boxShadow: subtleShadow
             ? [
                 BoxShadow(

@@ -1,17 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sizer/sizer.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:excel/excel.dart' hide Border;
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:convert';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 
 import '../../core/app_export.dart';
 import '../../services/transaction_service.dart';
 import './widgets/empty_state_widget.dart';
 import './widgets/filter_chips_widget.dart';
-import './widgets/monthly_summary_widget.dart';
 import './widgets/search_bar_widget.dart';
 import './widgets/transaction_card_widget.dart';
 import './widgets/transaction_filter_widget.dart';
 import '../../widgets/loading_list.dart';
 import '../../widgets/app_bottom_nav.dart';
+
+// Palette constants (matching dashboard design system)
+const Color kPrimary = Color(0xFF29A385);
+const Color kPrimaryText = Color(0xFFFFFFFF);
+const Color kSecondary = Color(0xFFEDF0F3);
+const Color kSecondaryText = Color(0xFF303A50);
+const Color kAccent = Color(0xFFECF9F5);
+const Color kAccentText = Color(0xFF1F7A63);
+const Color kBaseBackground = Color(0xFFF9FAFB);
+const Color kBaseText = Color(0xFF131720);
+const Color kCard = Color(0xFFFFFFFF);
+const Color kCardText = Color(0xFF131720);
+const Color kMuted = Color(0xFFE8EBEE);
+const Color kMutedText = Color(0xFF676F7E);
+const Color kDestructive = Color(0xFFDC2828);
+const Color kDestructiveText = Color(0xFFFFFFFF);
+const Color kBorder = Color(0xFFE0E5EB);
+const Color kInput = Color(0xFFE0E5EB);
+const Color kFocusRing = Color(0xFF29A385);
 
 class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
@@ -434,19 +459,131 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
     );
   }
 
-  void _exportTransactions() {
-    // Mock export functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content:
-            Text('Exporting ${_selectedTransactionIds.length} transactions...'),
-        action: SnackBarAction(
-          label: 'View',
-          onPressed: () {},
+  void _exportTransactions() async {
+    // Show export dialog with theme styling
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: kCard,
+        title: Text('Export Transactions', style: TextStyle(color: kBaseText)),
+        content: Text(
+          'Export ${_selectedTransactionIds.length} selected transactions to Excel?',
+          style: TextStyle(color: kCardText),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel', style: TextStyle(color: kMutedText)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _performExport(_filteredTransactions.where((t) => 
+                _selectedTransactionIds.contains(t['id'])).toList());
+              _exitMultiSelectMode();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kPrimary,
+              foregroundColor: kPrimaryText,
+            ),
+            child: const Text('Export'),
+          ),
+        ],
       ),
     );
-    _exitMultiSelectMode();
+  }
+
+  Future<void> _performExport(List<Map<String, dynamic>> transactions) async {
+    if (transactions.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('No transactions to export'),
+          backgroundColor: kMuted,
+        ),
+      );
+      return;
+    }
+
+    try {
+      // Create Excel workbook
+      var excel = Excel.createExcel();
+      Sheet sheetObject = excel['Transactions'];
+      
+      // Add headers
+      sheetObject.appendRow([
+        TextCellValue('ID'),
+        TextCellValue('Description'),
+        TextCellValue('Amount'),
+        TextCellValue('Type'),
+        TextCellValue('Category'),
+        TextCellValue('Payment Method'),
+        TextCellValue('Date'),
+      ]);
+
+      // Add transaction data
+      for (final t in transactions) {
+        sheetObject.appendRow([
+          TextCellValue((t['id'] ?? '').toString()),
+          TextCellValue((t['description'] ?? '').toString()),
+          DoubleCellValue((t['amount'] as num?)?.toDouble() ?? 0.0),
+          TextCellValue((t['type'] ?? '').toString()),
+          TextCellValue((t['category'] ?? '').toString()),
+          TextCellValue((t['paymentMethod'] ?? '').toString()),
+          TextCellValue((t['date'] is DateTime) 
+              ? (t['date'] as DateTime).toIso8601String() 
+              : (t['date'] ?? '').toString()),
+        ]);
+      }
+
+      // Save to file
+      var fileBytes = excel.save();
+      if (fileBytes != null) {
+        if (kIsWeb) {
+          // Web platform: trigger download
+          final blob = html.Blob([fileBytes], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+          final url = html.Url.createObjectUrlFromBlob(blob);
+          final anchor = html.AnchorElement(href: url)
+            ..setAttribute('download', 'transactions_export_${DateTime.now().millisecondsSinceEpoch}.xlsx')
+            ..click();
+          html.Url.revokeObjectUrl(url);
+        } else {
+          // Mobile/Desktop platform: use file picker
+          String? outputPath = await FilePicker.platform.saveFile(
+            dialogTitle: 'Save Excel File',
+            fileName: 'transactions_export_${DateTime.now().millisecondsSinceEpoch}.xlsx',
+            type: FileType.custom,
+            allowedExtensions: ['xlsx'],
+          );
+
+          if (outputPath == null) {
+            // User cancelled
+            return;
+          }
+
+          File(outputPath)
+            ..createSync(recursive: true)
+            ..writeAsBytesSync(fileBytes);
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Exported ${transactions.length} transactions to Excel'),
+            backgroundColor: kPrimary,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to export: ${e.toString()}'),
+          backgroundColor: kDestructive,
+        ),
+      );
+    }
+  }
+
+  Future<void> _exportAllTransactions() async {
+    await _performExport(_filteredTransactions);
   }
 
   Future<void> _refreshTransactions() async {
@@ -457,43 +594,6 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
       await Future.delayed(const Duration(milliseconds: 300));
       _loadMockData();
     }
-  }
-
-  Map<String, dynamic> _getMonthlySummary() {
-    final now = DateTime.now();
-    final currentMonth = DateTime(now.year, now.month, 1);
-    final nextMonth = DateTime(now.year, now.month + 1, 1);
-
-    final monthlyTransactions = _allTransactions.where((transaction) {
-      final date = transaction['date'] as DateTime;
-      return date.isAfter(currentMonth.subtract(const Duration(days: 1))) &&
-          date.isBefore(nextMonth);
-    }).toList();
-
-    double totalIncome = 0;
-    double totalExpenses = 0;
-    Map<String, double> categoryBreakdown = {};
-
-    for (final transaction in monthlyTransactions) {
-      final amount = (transaction['amount'] as num).toDouble();
-      final type = transaction['type'] as String;
-      final category = transaction['category'] as String;
-
-      if (type == 'income') {
-        totalIncome += amount;
-      } else {
-        totalExpenses += amount;
-        categoryBreakdown[category] =
-            (categoryBreakdown[category] ?? 0) + amount;
-      }
-    }
-
-    return {
-      'month': 'December 2024',
-      'totalIncome': totalIncome,
-      'totalExpenses': totalExpenses,
-      'categoryBreakdown': categoryBreakdown,
-    };
   }
 
   List<Widget> _buildGroupedTransactions() {
@@ -527,14 +627,6 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
       }
       groupedTransactions[dateKey]!.add(transaction);
     }
-
-    // Add monthly summary at the top
-    widgets.add(MonthlySummaryWidget(
-      summaryData: _getMonthlySummary(),
-      onTap: () {
-        // Navigate to detailed analytics
-      },
-    ));
 
     // Build grouped transaction widgets
     final sortedDates = groupedTransactions.keys.toList()
@@ -626,12 +718,159 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Calculate total income and expenses
+    double totalIncome = 0;
+    double totalExpenses = 0;
+    for (final transaction in _allTransactions) {
+      final amount = (transaction['amount'] as num?)?.toDouble() ?? 0.0;
+      final type = transaction['type'] as String?;
+      if (type == 'income') {
+        totalIncome += amount;
+      } else if (type == 'expense') {
+        totalExpenses += amount;
+      }
+    }
+
     return Scaffold(
-      backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
+      backgroundColor: kBaseBackground,
       appBar:
           _isMultiSelectMode ? _buildMultiSelectAppBar() : _buildNormalAppBar(),
       body: Column(
         children: [
+          // Summary Cards - Total Income and Total Expenses
+          if (!_isMultiSelectMode)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.all(3.w),
+                      decoration: BoxDecoration(
+                        color: kCard,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: kBorder, width: 1),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.10),
+                            blurRadius: 3.0,
+                            spreadRadius: 0.0,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Total Income',
+                            style: TextStyle(
+                              color: kMutedText,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(height: 0.5.h),
+                          Text(
+                            '+\$${totalIncome.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              color: const Color(0xFF10B981),
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 3.w),
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.all(3.w),
+                      decoration: BoxDecoration(
+                        color: kCard,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: kBorder, width: 1),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.10),
+                            blurRadius: 3.0,
+                            spreadRadius: 0.0,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Total Expenses',
+                            style: TextStyle(
+                              color: kMutedText,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(height: 0.5.h),
+                          Text(
+                            '-\$${totalExpenses.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              color: kDestructive,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          // Export Button
+          if (!_isMultiSelectMode)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _importTransactions,
+                      icon: const Icon(Icons.upload_file, size: 18),
+                      label: const Text('Import Excel'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: kBaseText,
+                        side: const BorderSide(color: kBorder, width: 1),
+                        backgroundColor: kCard,
+                        padding: EdgeInsets.symmetric(vertical: 1.5.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 3.w),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _exportAllTransactions,
+                      icon: const Icon(Icons.download, size: 18),
+                      label: const Text('Export Transactions'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: kBaseText,
+                        side: const BorderSide(color: kBorder, width: 1),
+                        backgroundColor: kCard,
+                        padding: EdgeInsets.symmetric(vertical: 1.5.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
           // Search bar
           if (!_isMultiSelectMode)
             SearchBarWidget(
@@ -688,7 +927,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
               Navigator.pushNamed(context, '/budget-categories-screen');
               break;
             case 3:
-              Navigator.pushNamed(context, '/profile-screen');
+              Navigator.pushNamed(context, '/reports-screen');
               break;
           }
         },
@@ -696,17 +935,127 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
     );
   }
 
+  Future<void> _importTransactions() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['xlsx'],
+        withData: true,
+      );
+
+      if (result == null) {
+        // User cancelled
+        return;
+      }
+
+      Uint8List? bytes;
+      if (kIsWeb) {
+        bytes = result.files.first.bytes;
+      } else {
+        final path = result.files.first.path;
+        if (path != null) {
+          bytes = await File(path).readAsBytes();
+        }
+      }
+
+      if (bytes == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Unable to read selected file'),
+            backgroundColor: kDestructive,
+          ),
+        );
+        return;
+      }
+
+      final excel = Excel.decodeBytes(bytes);
+      final sheetNames = excel.tables.keys.toList();
+      if (sheetNames.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('No sheets found in Excel file'),
+            backgroundColor: kDestructive,
+          ),
+        );
+        return;
+      }
+
+      final table = excel.tables[sheetNames.first];
+      if (table == null || table.rows.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Selected sheet is empty'),
+            backgroundColor: kDestructive,
+          ),
+        );
+        return;
+      }
+
+      // Expect first row to be headers matching our export
+      int importedCount = 0;
+      for (int i = 1; i < table.rows.length; i++) {
+        final row = table.rows[i];
+        String id = (row.length > 0 ? (row[0]?.value?.toString() ?? '') : '');
+        String description = (row.length > 1 ? (row[1]?.value?.toString() ?? '') : '');
+        double amount = 0.0;
+        if (row.length > 2) {
+          final rawStr = row[2]?.value?.toString();
+          amount = double.tryParse(rawStr ?? '') ?? 0.0;
+        }
+        String type = (row.length > 3 ? (row[3]?.value?.toString() ?? 'expense') : 'expense');
+        String category = (row.length > 4 ? (row[4]?.value?.toString() ?? 'General') : 'General');
+        String paymentMethod = (row.length > 5 ? (row[5]?.value?.toString() ?? 'Bank Transfer') : 'Bank Transfer');
+        DateTime date = DateTime.now();
+        if (row.length > 6) {
+          final rawStr = row[6]?.value?.toString();
+          final parsed = DateTime.tryParse(rawStr ?? '');
+          if (parsed != null) {
+            date = parsed;
+          }
+        }
+
+        final transaction = {
+          'id': id.isNotEmpty ? id : DateTime.now().millisecondsSinceEpoch.toString(),
+          'description': description.isNotEmpty ? description : 'Imported Item',
+          'amount': amount,
+          'type': type,
+          'category': category,
+          'paymentMethod': paymentMethod,
+          'date': date,
+          'isFavorite': false,
+        };
+
+        _allTransactions.add(transaction);
+        importedCount++;
+      }
+
+      _applyFilters();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Imported $importedCount transactions from Excel'),
+          backgroundColor: kPrimary,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to import: ${e.toString()}'),
+          backgroundColor: kDestructive,
+        ),
+      );
+    }
+  }
+
   PreferredSizeWidget _buildNormalAppBar() {
     return BrandAppBar(
+      backgroundColor: Colors.white,
+      elevation: 2,
       leading: IconButton(
         onPressed: () {
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            AppRoutes.dashboardHome,
-            (route) => false,
-          );
+          Navigator.pop(context);
         },
-        icon: const Icon(Icons.home),
+        icon: const Icon(Icons.arrow_back),
       ),
       title: Text('Transaction History'),
       actions: [
@@ -734,22 +1083,14 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
             ),
           ],
         ),
-        IconButton(
-          onPressed: () {
-            // Navigate to settings or more options
-          },
-          icon: CustomIconWidget(
-            iconName: 'more_vert',
-            color: AppTheme.lightTheme.colorScheme.onSurface,
-            size: 24,
-          ),
-        ),
       ],
     );
   }
 
   PreferredSizeWidget _buildMultiSelectAppBar() {
     return BrandAppBar(
+      backgroundColor: Colors.white,
+      elevation: 2,
       leading: IconButton(
         onPressed: _exitMultiSelectMode,
         icon: CustomIconWidget(
@@ -787,9 +1128,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
         onPressed: () {
           Navigator.pushNamed(context, '/add-expense-screen');
         },
+        backgroundColor: kPrimary,
         child: CustomIconWidget(
           iconName: 'add',
-          color: Colors.white,
+          color: Colors.black,
           size: 24,
         ),
       ),

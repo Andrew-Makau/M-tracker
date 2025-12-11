@@ -9,6 +9,25 @@ import './widgets/empty_state_widget.dart';
 import './widgets/time_period_toggle_widget.dart';
 import '../../widgets/app_bottom_nav.dart';
 
+// Palette constants (matching dashboard design system)
+const Color kPrimary = Color(0xFF29A385);
+const Color kPrimaryText = Color(0xFFFFFFFF);
+const Color kSecondary = Color(0xFFEDF0F3);
+const Color kSecondaryText = Color(0xFF303A50);
+const Color kAccent = Color(0xFFECF9F5);
+const Color kAccentText = Color(0xFF1F7A63);
+const Color kBaseBackground = Color(0xFFF9FAFB);
+const Color kBaseText = Color(0xFF131720);
+const Color kCard = Color(0xFFFFFFFF);
+const Color kCardText = Color(0xFF131720);
+const Color kMuted = Color(0xFFE8EBEE);
+const Color kMutedText = Color(0xFF676F7E);
+const Color kDestructive = Color(0xFFDC2828);
+const Color kDestructiveText = Color(0xFFFFFFFF);
+const Color kBorder = Color(0xFFE0E5EB);
+const Color kInput = Color(0xFFE0E5EB);
+const Color kFocusRing = Color(0xFF29A385);
+
 class BudgetCategoriesScreen extends StatefulWidget {
   const BudgetCategoriesScreen({super.key});
 
@@ -294,8 +313,10 @@ class _BudgetCategoriesScreenState extends State<BudgetCategoriesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
+      backgroundColor: kBaseBackground,
       appBar: BrandAppBar(
+        backgroundColor: Colors.white,
+        elevation: 2,
         leading: IconButton(
           onPressed: () {
             Navigator.pushNamedAndRemoveUntil(
@@ -312,9 +333,6 @@ class _BudgetCategoriesScreenState extends State<BudgetCategoriesScreen>
             fontWeight: FontWeight.w600,
           ),
         ),
-        // keep transparent background so the gradient shows through
-        backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
-        elevation: 0,
         actions: [
           if (_isMultiSelectMode) ...[
             IconButton(
@@ -371,7 +389,7 @@ class _BudgetCategoriesScreenState extends State<BudgetCategoriesScreen>
               // current screen
               break;
             case 3:
-              Navigator.pushNamed(context, '/profile-screen');
+              Navigator.pushNamed(context, '/reports-screen');
               break;
           }
         },

@@ -7,11 +7,11 @@ class AppTheme {
   AppTheme._();
 
   // Design System Colors - Adaptive Professional Palette
-    // Money / Budget focused palette: greens for trust, gold accents for highlights
-    static const Color primaryLight = Color(0xFF4B5563); // Grey as primary (Gray 700)
-    static const Color primaryDark = Color(0xFF374151); // Darker grey for dark mode primary
-    static const Color secondaryLight = Color(0xFFFF8C00); // Orange as secondary (Dark Orange)
-    static const Color secondaryDark = Color(0xFFFFA500); // Orange variant for dark mode
+    // Money / Budget focused palette: greens for trust and financial credibility
+    static const Color primaryLight = Color(0xFF29A385); // Green as primary (teal-green)
+    static const Color primaryDark = Color(0xFF1F7A63); // Darker green for dark mode primary
+    static const Color secondaryLight = Color(0xFF34D399); // Lighter green as secondary
+    static const Color secondaryDark = Color(0xFF10B981); // Green variant for dark mode
     static const Color accentLight = Color(0xFFFFFFFF); // White accent
     static const Color accentDark = Color(0xFFEEEEEE); // Softer white in dark mode
     static const Color successLight = Color(0xFF10B981); // Green (success)
@@ -109,7 +109,7 @@ class AppTheme {
       onInverseSurface: secondaryLight,
       inversePrimary: secondaryLight,
     ),
-    scaffoldBackgroundColor: secondaryLight,
+    scaffoldBackgroundColor: Color(0xFFF9FAFB), // Light grey scaffold background for contrast
     cardColor: surfaceElevatedLight,
     dividerColor: borderSubtleLight,
 

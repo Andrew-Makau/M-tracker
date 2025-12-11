@@ -9,6 +9,7 @@ import '../../core/app_export.dart';
 // Removed gradient background for minimal/flat design
 import '../../core/design_tokens.dart';
 import '../../widgets/app_bottom_nav.dart';
+import '../../widgets/brand_app_bar.dart';
 // import 'package:dot_curved_bottom_nav/dot_curved_bottom_nav.dart'; // enable after pub get
 import '../../services/transaction_service.dart';
 import '../../services/auth_service.dart';
@@ -419,10 +420,9 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBaseBackground,
-      appBar: AppBar(
+      appBar: BrandAppBar(
         backgroundColor: Colors.white,
         elevation: 2,
-        shadowColor: Colors.black12,
         title: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -450,32 +450,29 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
             ),
           ],
         ),
-        iconTheme: const IconThemeData(color: kBaseText),
-        actionsIconTheme: const IconThemeData(color: kBaseText),
-        leadingWidth: 0,
         leading: const SizedBox.shrink(),
         actions: [
           IconButton(
             tooltip: _selectedDate == null
                 ? 'Pick Date'
                 : 'Selected: ${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}',
-            icon: const Icon(Icons.calendar_month),
+            icon: const Icon(Icons.calendar_month, color: Colors.black),
             onPressed: _pickDate,
           ),
           IconButton(
             tooltip: 'Settings',
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings, color: Colors.black),
             onPressed: () => Navigator.pushNamed(context, '/profile-screen'),
           ),
           IconButton(
             tooltip: _useLiveData ? 'Live Data: ON' : 'Live Data: OFF',
-            icon: Icon(_useLiveData ? Icons.wifi : Icons.storage, color: kBaseText),
+            icon: Icon(_useLiveData ? Icons.wifi : Icons.storage, color: Colors.black),
             onPressed: _toggleLiveData,
           ),
           Builder(
             builder: (ctx) => IconButton(
               tooltip: 'Quick Actions',
-              icon: const Icon(Icons.grid_view),
+              icon: const Icon(Icons.grid_view, color: Colors.black),
               onPressed: () => Scaffold.of(ctx).openEndDrawer(),
             ),
           ),
@@ -694,7 +691,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
                               // Force a 2x2 grid even on mobile; tighten aspect on narrow widths to avoid overflow
                               final int crossAxisCount = 2;
                               // Make cards wider relative to height so they appear shorter on screen
-                              final double aspectRatio = constraints.maxWidth < 420 ? 2.8 : 3.2;
+                              final double aspectRatio = constraints.maxWidth < 420 ? 2.2 : 2.6;
                               final cards = <SummaryStatCard>[
                                 SummaryStatCard(
                                   title: 'Current Balance',

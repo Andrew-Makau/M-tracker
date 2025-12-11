@@ -35,6 +35,7 @@ class BrandAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final useGradient = backgroundColor == null || backgroundColor == Colors.transparent;
 
     return AppBar(
       title: title,
@@ -43,16 +44,21 @@ class BrandAppBar extends StatelessWidget implements PreferredSizeWidget {
       centerTitle: centerTitle,
       elevation: elevation,
       backgroundColor: backgroundColor ?? Colors.transparent,
-      // gradient background using Brand colors — uses theme-level gradient if available
-      flexibleSpace: Container(
+      shadowColor: elevation > 0 ? Colors.black12 : null,
+      // gradient background using Brand colors — only when backgroundColor is transparent
+      flexibleSpace: useGradient ? Container(
         decoration: BoxDecoration(
           gradient: AppTheme.brandGradient,
         ),
-      ),
-      // use the app theme's appBar text/icon styles where possible
-      iconTheme: theme.appBarTheme.iconTheme ?? const IconThemeData(),
+      ) : null,
+      // use the app theme's appBar text/icon styles, or default to black for white backgrounds
+      iconTheme: backgroundColor == Colors.white 
+          ? const IconThemeData(color: Colors.black)
+          : theme.appBarTheme.iconTheme ?? const IconThemeData(),
       titleTextStyle: theme.appBarTheme.titleTextStyle,
-      actionsIconTheme: theme.appBarTheme.actionsIconTheme,
+      actionsIconTheme: backgroundColor == Colors.white
+          ? const IconThemeData(color: Colors.black)
+          : theme.appBarTheme.actionsIconTheme,
       bottom: bottom,
     );
   }
