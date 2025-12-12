@@ -34,30 +34,16 @@ class FloatingInputField extends StatefulWidget {
 
 class _FloatingInputFieldState extends State<FloatingInputField>
     with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _opacityAnimation;
   bool _isFocused = false;
   String? _errorText;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
-    _opacityAnimation = Tween<double>(begin: 0.7, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
     super.dispose();
   }
 
@@ -71,124 +57,105 @@ class _FloatingInputFieldState extends State<FloatingInputField>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Opacity(
-            opacity: _opacityAnimation.value,
-            child: Container(
-              margin: EdgeInsets.symmetric(vertical: 1.h),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: AppTheme.lightTheme.colorScheme.surface
-                    .withValues(alpha: 0.9),
-                border: Border.all(
-                  color: _errorText != null
-                      ? AppTheme.lightTheme.colorScheme.error
-                      : _isFocused
-                          ? AppTheme.lightTheme.colorScheme.primary
-                          : AppTheme.lightTheme.colorScheme.outline,
-                  width: _isFocused ? 2 : 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.lightTheme.colorScheme.shadow,
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 1.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.white,
+              border: Border.all(
+                color: _errorText != null
+                    ? AppTheme.lightTheme.colorScheme.error
+                    : _isFocused
+                        ? const Color(0xFF29A385)
+                        : const Color(0xFF29A385).withOpacity(0.5),
+                width: 2,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextFormField(
-                    controller: widget.controller,
-                    keyboardType: widget.keyboardType,
-                    obscureText: widget.isPassword && !widget.isPasswordVisible,
-                    onChanged: _validateInput,
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      setState(() {
-                        _isFocused = true;
-                      });
-                      _animationController.forward();
-                    },
-                    onTapOutside: (event) {
-                      setState(() {
-                        _isFocused = false;
-                      });
-                      _animationController.reverse();
-                    },
-                    style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
-                      color: AppTheme.lightTheme.colorScheme.onSurface,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: widget.label,
-                      hintText: widget.hint,
-                      prefixIcon: Padding(
-                        padding: EdgeInsets.all(3.w),
-                        child: CustomIconWidget(
-                          iconName: widget.iconName,
-                          color: _isFocused
-                              ? AppTheme.lightTheme.colorScheme.primary
-                              : AppTheme
-                                  .lightTheme.colorScheme.onSurfaceVariant,
-                          size: 20,
-                        ),
-                      ),
-                      suffixIcon: widget.isPassword
-                          ? IconButton(
-                              onPressed: () {
-                                HapticFeedback.lightImpact();
-                                widget.onToggleVisibility?.call();
-                              },
-                              icon: CustomIconWidget(
-                                iconName: widget.isPasswordVisible
-                                    ? 'visibility_off'
-                                    : 'visibility',
-                                color: AppTheme
-                                    .lightTheme.colorScheme.onSurfaceVariant,
-                                size: 20,
-                              ),
-                            )
-                          : null,
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 4.w,
-                        vertical: 2.h,
-                      ),
-                      labelStyle:
-                          AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                        color: _isFocused
-                            ? AppTheme.lightTheme.colorScheme.primary
-                            : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                      ),
-                      hintStyle:
-                          AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.lightTheme.colorScheme.onSurfaceVariant
-                            .withValues(alpha: 0.6),
-                      ),
-                    ),
+            ),
+            child: TextFormField(
+              controller: widget.controller,
+              keyboardType: widget.keyboardType,
+              obscureText: widget.isPassword && !widget.isPasswordVisible,
+              onChanged: _validateInput,
+              onTap: () {
+                HapticFeedback.lightImpact();
+                setState(() {
+                  _isFocused = true;
+                });
+              },
+              onTapOutside: (event) {
+                setState(() {
+                  _isFocused = false;
+                });
+              },
+              style: TextStyle(
+                color: const Color(0xFF0F172A),
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+              ),
+              decoration: InputDecoration(
+                hintText: widget.hint,
+                prefixIcon: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 3.w),
+                  child: Icon(
+                    widget.iconName == 'email'
+                        ? Icons.email_outlined
+                        : widget.iconName == 'lock'
+                            ? Icons.lock_outline
+                            : Icons.person_outline,
+                    color: const Color(0xFF29A385),
+                    size: 22,
                   ),
-                  if (_errorText != null)
-                    Padding(
-                      padding: EdgeInsets.only(left: 4.w, bottom: 1.h),
-                      child: Text(
-                        _errorText!,
-                        style:
-                            AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-                          color: AppTheme.lightTheme.colorScheme.error,
+                ),
+                suffixIcon: widget.isPassword
+                    ? IconButton(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          widget.onToggleVisibility?.call();
+                        },
+                        icon: Icon(
+                          widget.isPasswordVisible
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: const Color(0xFF64748B),
+                          size: 22,
                         ),
-                      ),
-                    ),
-                ],
+                      )
+                    : null,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                focusedErrorBorder: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 4.w,
+                  vertical: 2.h,
+                ),
+                hintStyle: TextStyle(
+                  color: const Color(0xFF94A3B8),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ),
           ),
-        );
-      },
+          if (_errorText != null)
+            Padding(
+              padding: EdgeInsets.only(left: 4.w, top: 0.5.h),
+              child: Text(
+                _errorText!,
+                style: TextStyle(
+                  color: AppTheme.lightTheme.colorScheme.error,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

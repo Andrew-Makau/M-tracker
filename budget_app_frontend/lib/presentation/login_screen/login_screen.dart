@@ -316,7 +316,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   style: AppTheme
                                       .lightTheme.textTheme.headlineMedium
                                       ?.copyWith(
-                                    color: AppTheme.lightTheme.colorScheme.onSurface,
+                                    color: const Color(0xFF0F172A),
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -325,9 +325,11 @@ class _LoginScreenState extends State<LoginScreen>
                                   'Sign in to continue managing your budget',
                                   style: AppTheme.lightTheme.textTheme.bodyLarge
                                       ?.copyWith(
-                                    color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                                    color: const Color(0xFF475569),
                                   ),
                                   textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
@@ -353,8 +355,10 @@ class _LoginScreenState extends State<LoginScreen>
                                   style: AppTheme
                                       .lightTheme.textTheme.bodyMedium
                                       ?.copyWith(
-                                    color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                                    color: const Color(0xFF475569),
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
@@ -384,7 +388,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     style: AppTheme
                                         .lightTheme.textTheme.bodyMedium
                                         ?.copyWith(
-                                      color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                                      color: const Color(0xFF475569),
                                     ),
                                   ),
                                 ),
@@ -479,8 +483,10 @@ class _LoginScreenState extends State<LoginScreen>
                                             child: Text(
                                               'Remember me',
                                               overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
                                               style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                                                color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                                                color: const Color(0xFF334155),
+                                                fontWeight: FontWeight.w500,
                                               ),
                                             ),
                                           ),
@@ -496,6 +502,7 @@ class _LoginScreenState extends State<LoginScreen>
                                           child: Text(
                                             'Forgot Password?',
                                             overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
                                             style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
                                               color: AppTheme.lightTheme.colorScheme.primary,
                                               fontWeight: FontWeight.w600,
@@ -534,8 +541,10 @@ class _LoginScreenState extends State<LoginScreen>
                                             child: Text(
                                               'Remember me',
                                               overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
                                               style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                                                color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                                                color: const Color(0xFF334155),
+                                                fontWeight: FontWeight.w500,
                                               ),
                                             ),
                                           ),
@@ -633,7 +642,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   style: AppTheme
                                       .lightTheme.textTheme.bodyMedium
                                       ?.copyWith(
-                                    color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                                    color: const Color(0xFF475569),
                                   ),
                                 ),
                                 TextButton(
@@ -643,6 +652,8 @@ class _LoginScreenState extends State<LoginScreen>
                                   },
                                     child: Text(
                                     'Create Account',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: AppTheme
                                         .lightTheme.textTheme.bodyMedium
                                         ?.copyWith(

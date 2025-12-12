@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
-import '../login_screen/widgets/animated_gradient_background.dart';
 import './widgets/registration_form.dart';
 import './widgets/social_registration_buttons.dart';
 
@@ -149,8 +147,20 @@ Future<void> _handleRegistration() async {
     return Scaffold(
       body: Stack(
         children: [
-          const Positioned.fill(
-            child: AnimatedGradientBackground(),
+          // Solid white background with subtle green tint
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white,
+                    const Color(0xFF29A385).withOpacity(0.03),
+                  ],
+                ),
+              ),
+            ),
           ),
           SafeArea(
             child: SingleChildScrollView(
@@ -159,16 +169,10 @@ Future<void> _handleRegistration() async {
                 padding: EdgeInsets.symmetric(horizontal: 6.w),
                 child: Column(
                   children: [
-                    SizedBox(height: 2.h),
+                    SizedBox(height: 4.h),
                     _buildHeader(),
                     SizedBox(height: 4.h),
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SlideTransition(
-                        position: _slideAnimation,
-                        child: _buildRegistrationCard(),
-                      ),
-                    ),
+                    _buildRegistrationCard(),
                     SizedBox(height: 3.h),
                     _buildLoginLink(),
                     SizedBox(height: 2.h),
@@ -195,18 +199,16 @@ Future<void> _handleRegistration() async {
               child: Container(
                 padding: EdgeInsets.all(2.w),
                 decoration: BoxDecoration(
-                  color: AppTheme.lightTheme.colorScheme.surface
-                      .withValues(alpha: 0.8),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppTheme.lightTheme.colorScheme.outline
-                        .withValues(alpha: 0.2),
+                    color: const Color(0xFFE0E5EB),
                   ),
                 ),
-                child: CustomIconWidget(
-                  iconName: 'arrow_back',
+                child: const Icon(
+                  Icons.arrow_back,
                   size: 24,
-                  color: AppTheme.lightTheme.colorScheme.onSurface,
+                  color: Color(0xFF0F172A),
                 ),
               ),
             ),
@@ -217,15 +219,18 @@ Future<void> _handleRegistration() async {
           'Create Account',
           style: AppTheme.lightTheme.textTheme.headlineLarge?.copyWith(
             fontWeight: FontWeight.w700,
-            color: Theme.of(context).colorScheme.onPrimary,
+            color: const Color(0xFF0F172A),
           ),
         ),
         SizedBox(height: 1.h),
         Text(
-          'Join BudgetFlow and take control of your finances with our premium budget management tools',
+          'Join BudgetFlow and take control of your finances',
           textAlign: TextAlign.center,
-          style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onPrimary.withAlpha(230),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
+            color: const Color(0xFF1E293B),
+            fontWeight: FontWeight.w500,
             height: 1.5,
           ),
         ),
@@ -234,69 +239,47 @@ Future<void> _handleRegistration() async {
   }
 
   Widget _buildRegistrationCard() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(6.w),
-          decoration: BoxDecoration(
-            // Glassmorphism: translucent surface with improved contrast
-            color: Colors.white.withValues(alpha: 0.18),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.35),
-              width: 1.25,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.18),
-                blurRadius: 28,
-                offset: const Offset(0, 12),
-              ),
-            ],
-          ),
-          child: Column(
+    return Container(
+      width: double.infinity,
+      child: Column(
+        children: [
+          const SocialRegistrationButtons(),
+          SizedBox(height: 4.h),
+          // Divider
+          Row(
             children: [
-              const SocialRegistrationButtons(),
-              SizedBox(height: 4.h),
-              // Divider consistent with login
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 1,
-                      color: Colors.white.withValues(alpha: 0.5),
-                    ),
+              Expanded(
+                child: Container(
+                  height: 1,
+                  color: const Color(0xFF29A385).withOpacity(0.35),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4.w),
+                child: Text(
+                  'or sign up with email',
+                  style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+                    color: const Color(0xFF334155),
+                    fontWeight: FontWeight.w600,
                   ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4.w),
-                    child: Text(
-                      'or sign up with email',
-                      style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimary.withAlpha(235),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      height: 1,
-                      color: Colors.white.withValues(alpha: 0.5),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  height: 1,
+                  color: const Color(0xFF29A385).withOpacity(0.35),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 4.h),
-              RegistrationForm(
-                onValidationChanged: _onValidationChanged,
-                onFormDataChanged: _onFormDataChanged,
-              ),
-              SizedBox(height: 4.h),
-              _buildCreateAccountButton(),
-            ],
+          SizedBox(height: 4.h),
+          RegistrationForm(
+            onValidationChanged: _onValidationChanged,
+            onFormDataChanged: _onFormDataChanged,
           ),
-        ),
+          SizedBox(height: 4.h),
+          _buildCreateAccountButton(),
+        ],
       ),
     );
   }
@@ -347,7 +330,8 @@ Future<void> _handleRegistration() async {
         Text(
           'Already have an account? ',
           style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onPrimary.withAlpha(235),
+            color: const Color(0xFF1E293B),
+            fontWeight: FontWeight.w500,
           ),
         ),
         TextButton(
@@ -357,11 +341,13 @@ Future<void> _handleRegistration() async {
           },
           child: Text(
             'Sign In',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onPrimary,
+              color: const Color(0xFF29A385),
               fontWeight: FontWeight.w600,
               decoration: TextDecoration.underline,
-              decorationColor: Theme.of(context).colorScheme.onPrimary,
+              decorationColor: const Color(0xFF29A385),
             ),
           ),
         ),

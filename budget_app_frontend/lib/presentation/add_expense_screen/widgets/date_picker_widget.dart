@@ -6,11 +6,15 @@ import '../../../core/app_export.dart';
 class DatePickerWidget extends StatefulWidget {
   final Function(DateTime) onDateSelected;
   final DateTime? selectedDate;
+  final Function(DateTimeRange)? onDateRangeSelected;
+  final VoidCallback? onCancel;
 
   const DatePickerWidget({
     super.key,
     required this.onDateSelected,
     this.selectedDate,
+    this.onDateRangeSelected,
+    this.onCancel,
   });
 
   @override
@@ -19,11 +23,17 @@ class DatePickerWidget extends StatefulWidget {
 
 class _DatePickerWidgetState extends State<DatePickerWidget> {
   DateTime selectedDate = DateTime.now();
+  DateTimeRange? selectedRange;
+  late DateTime _initialDate;
+  DateTimeRange? _initialRange;
 
   @override
   void initState() {
     super.initState();
     selectedDate = widget.selectedDate ?? DateTime.now();
+    selectedRange = DateTimeRange(start: selectedDate, end: selectedDate);
+    _initialDate = selectedDate;
+    _initialRange = selectedRange;
   }
 
   String _formatDate(DateTime date) {
@@ -39,6 +49,16 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
     } else {
       return '${date.month}/${date.day}/${date.year}';
     }
+  }
+
+  String _formatRange(DateTimeRange range) {
+    final start = range.start;
+    final end = range.end;
+    final sameDay = start.year == end.year && start.month == end.month && start.day == end.day;
+    if (sameDay) {
+      return _formatDate(start);
+    }
+    return '${start.month}/${start.day}/${start.year} - ${end.month}/${end.day}/${end.year}';
   }
 
   Future<void> _selectDate() async {
@@ -65,8 +85,8 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
+        selectedRange = DateTimeRange(start: picked, end: picked);
       });
-      widget.onDateSelected(picked);
     }
   }
 
@@ -74,16 +94,40 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
     final today = DateTime.now();
     setState(() {
       selectedDate = today;
+      selectedRange = DateTimeRange(start: today, end: today);
     });
-    widget.onDateSelected(today);
   }
 
   void _selectYesterday() {
     final yesterday = DateTime.now().subtract(const Duration(days: 1));
     setState(() {
       selectedDate = yesterday;
+      selectedRange = DateTimeRange(start: yesterday, end: yesterday);
     });
-    widget.onDateSelected(yesterday);
+  }
+
+  Future<void> _selectDateRange() async {
+    final DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      initialDateRange: selectedRange,
+    );
+
+    if (picked != null) {
+      setState(() {
+        selectedRange = picked;
+        selectedDate = picked.start;
+      });
+    }
+  }
+
+  void _cancelSelection() {
+    setState(() {
+      selectedDate = _initialDate;
+      selectedRange = _initialRange;
+    });
+    widget.onCancel?.call();
   }
 
   @override
@@ -94,7 +138,8 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
         Text(
           'Date',
           style: AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
-            color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
           ),
         ),
         SizedBox(height: 2.h),
@@ -116,29 +161,101 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
           width: double.infinity,
           padding: EdgeInsets.all(4.w),
           decoration: BoxDecoration(
-            color: AppTheme.lightTheme.colorScheme.surface,
+            color: Colors.white.withOpacity(0.08),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: AppTheme.lightTheme.colorScheme.outline
-                  .withValues(alpha: 0.3),
+              color: Colors.white.withOpacity(0.2),
             ),
           ),
           child: Row(
             children: [
               CustomIconWidget(
                 iconName: 'calendar_today',
-                color: AppTheme.lightTheme.colorScheme.primary,
+                color: Colors.white,
                 size: 5.w,
               ),
               SizedBox(width: 3.w),
-              Text(
-                _formatDate(selectedDate),
-                style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                  color: AppTheme.lightTheme.colorScheme.onSurface,
+              Expanded(
+                child: Text(
+                  selectedRange != null
+                      ? _formatRange(selectedRange!)
+                      : _formatDate(selectedDate),
+                  style: AppTheme.lightTheme.textTheme.headlineSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
           ),
+        ),
+        SizedBox(height: 2.h),
+        // Actions: Save & Cancel
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: _cancelSelection,
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: Colors.white.withOpacity(0.6), width: 1.2),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 2.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Cancel',
+                  style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 3.w),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  if (selectedRange != null) {
+                    widget.onDateRangeSelected?.call(selectedRange!);
+                  }
+                  widget.onDateSelected(selectedDate);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        selectedRange != null
+                            ? 'Date range saved: ${_formatRange(selectedRange!)}'
+                            : 'Date saved: ${_formatDate(selectedDate)}',
+                      ),
+                      duration: const Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.lightTheme.colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 2.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: CustomIconWidget(
+                  iconName: 'check',
+                  color: Colors.white,
+                  size: 5.w,
+                ),
+                label: Text(
+                  'Save',
+                  style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -159,13 +276,12 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
           decoration: BoxDecoration(
             color: isSelected
                 ? AppTheme.lightTheme.colorScheme.primary
-                : AppTheme.lightTheme.colorScheme.surface,
+                : Colors.white.withOpacity(0.08),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected
                   ? AppTheme.lightTheme.colorScheme.primary
-                  : AppTheme.lightTheme.colorScheme.outline
-                      .withValues(alpha: 0.3),
+                  : Colors.white.withOpacity(0.25),
             ),
           ),
           child: Text(
@@ -174,7 +290,7 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
             style: AppTheme.lightTheme.textTheme.labelLarge?.copyWith(
               color: isSelected
                   ? Colors.white
-                  : AppTheme.lightTheme.colorScheme.onSurface,
+                  : Colors.white.withOpacity(0.9),
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),
@@ -188,20 +304,19 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
 
     return Expanded(
       child: GestureDetector(
-        onTap: _selectDate,
+        onTap: _selectDateRange,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: EdgeInsets.symmetric(vertical: 2.h),
           decoration: BoxDecoration(
             color: isCustomDate
                 ? AppTheme.lightTheme.colorScheme.primary
-                : AppTheme.lightTheme.colorScheme.surface,
+                : Colors.white.withOpacity(0.08),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isCustomDate
                   ? AppTheme.lightTheme.colorScheme.primary
-                  : AppTheme.lightTheme.colorScheme.outline
-                      .withValues(alpha: 0.3),
+                  : Colors.white.withOpacity(0.25),
             ),
           ),
           child: Row(
@@ -211,7 +326,7 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
                 iconName: 'calendar_month',
                 color: isCustomDate
                     ? Colors.white
-                    : AppTheme.lightTheme.colorScheme.onSurface,
+                    : Colors.white.withOpacity(0.9),
                 size: 4.w,
               ),
               SizedBox(width: 1.w),
@@ -220,7 +335,7 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
                 style: AppTheme.lightTheme.textTheme.labelLarge?.copyWith(
                   color: isCustomDate
                       ? Colors.white
-                      : AppTheme.lightTheme.colorScheme.onSurface,
+                      : Colors.white.withOpacity(0.9),
                   fontWeight: isCustomDate ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),

@@ -5,12 +5,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:excel/excel.dart' hide Border;
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:convert';
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html;
 
 import '../../core/app_export.dart';
 import '../../services/transaction_service.dart';
+import '../../services/app_state.dart';
 import './widgets/empty_state_widget.dart';
 import './widgets/filter_chips_widget.dart';
 import './widgets/search_bar_widget.dart';
@@ -67,12 +67,32 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
   void initState() {
     super.initState();
     _initializeAnimations();
-    _loadMockData();
     _scrollController.addListener(_onScroll);
+
+    // Listen to global app state
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final appState = AppStateProvider.of(context);
+      if (appState != null) {
+        setState(() {
+          _useLiveData = appState.useLiveData;
+        });
+        if (_useLiveData) {
+          _fetchLiveTransactions();
+        } else {
+          _loadMockData();
+        }
+        // Listen to changes
+        appState.addListener(_onAppStateChanged);
+      } else {
+        _loadMockData();
+      }
+    });
   }
 
   @override
   void dispose() {
+    final appState = AppStateProvider.of(context);
+    appState?.removeListener(_onAppStateChanged);
     _scrollController.dispose();
     _searchController.dispose();
     _fabAnimationController.dispose();
@@ -88,6 +108,23 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
       CurvedAnimation(parent: _fabAnimationController, curve: Curves.easeInOut),
     );
     _fabAnimationController.forward();
+  }
+
+  void _onAppStateChanged() {
+    final appState = AppStateProvider.of(context);
+    if (appState != null && mounted) {
+      final newValue = appState.useLiveData;
+      if (_useLiveData != newValue) {
+        setState(() {
+          _useLiveData = newValue;
+        });
+        if (newValue) {
+          _fetchLiveTransactions();
+        } else {
+          _loadMockData();
+        }
+      }
+    }
   }
 
   void _loadMockData() {
@@ -596,6 +633,141 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
     }
   }
 
+  void _showEditTransactionDialog(Map<String, dynamic> transaction) {
+    final titleController = TextEditingController(text: transaction['description'] ?? '');
+    final amountController = TextEditingController(text: transaction['amount']?.toString() ?? '');
+    final dateController = TextEditingController(
+      text: transaction['date'] is DateTime
+          ? '${(transaction['date'] as DateTime).month}/${(transaction['date'] as DateTime).day}'
+          : 'Dec 10',
+    );
+    final notesController = TextEditingController(text: transaction['notes'] ?? '');
+    String selectedCategory = transaction['category'] ?? 'Income';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Edit Transaction'),
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.pop(context),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title
+              TextField(
+                controller: titleController,
+                decoration: InputDecoration(
+                  labelText: 'Title',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              SizedBox(height: 2.h),
+              // Category
+              StatefulBuilder(
+                builder: (context, setState) => DropdownButtonFormField<String>(
+                  value: selectedCategory,
+                  decoration: InputDecoration(
+                    labelText: 'Category',
+                    prefixIcon: const Icon(Icons.account_balance_wallet),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'Income', child: Text('Income')),
+                    DropdownMenuItem(value: 'Food', child: Text('Food')),
+                    DropdownMenuItem(value: 'Transport', child: Text('Transport')),
+                    DropdownMenuItem(value: 'Shopping', child: Text('Shopping')),
+                    DropdownMenuItem(value: 'Entertainment', child: Text('Entertainment')),
+                  ],
+                  onChanged: (value) => setState(() => selectedCategory = value ?? 'Income'),
+                ),
+              ),
+              SizedBox(height: 2.h),
+              // Amount and Date
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: amountController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: InputDecoration(
+                        labelText: 'Amount',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 3.w),
+                  Expanded(
+                    child: TextField(
+                      controller: dateController,
+                      decoration: InputDecoration(
+                        labelText: 'Date',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 2.h),
+              // Notes
+              TextField(
+                controller: notesController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: 'Notes (optional)',
+                  hintText: 'Add any notes...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Transaction "${titleController.text}" updated'),
+                  backgroundColor: kPrimary,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kPrimary,
+            ),
+            child: const Text('Update Transaction'),
+          ),
+        ],
+      ),
+    );
+  }
+
   List<Widget> _buildGroupedTransactions() {
     if (_filteredTransactions.isEmpty) {
       return [
@@ -658,10 +830,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
             isSelected: _selectedTransactionIds.contains(transaction['id']),
             onTap: _isMultiSelectMode
                 ? () => _toggleTransactionSelection(transaction['id'])
-                : null,
+                : () => _showEditTransactionDialog(transaction),
             onLongPress: () => _enterMultiSelectMode(transaction['id']),
             onEdit: () {
-              // Navigate to edit transaction
+              _showEditTransactionDialog(transaction);
             },
             onDuplicate: () {
               // Duplicate transaction logic
@@ -924,7 +1096,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
               // current screen
               break;
             case 2:
-              Navigator.pushNamed(context, '/budget-categories-screen');
+              Navigator.pushNamed(context, '/budget-screen');
               break;
             case 3:
               Navigator.pushNamed(context, '/reports-screen');
@@ -995,7 +1167,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
       int importedCount = 0;
       for (int i = 1; i < table.rows.length; i++) {
         final row = table.rows[i];
-        String id = (row.length > 0 ? (row[0]?.value?.toString() ?? '') : '');
+        String id = (row.isNotEmpty ? (row[0]?.value?.toString() ?? '') : '');
         String description = (row.length > 1 ? (row[1]?.value?.toString() ?? '') : '');
         double amount = 0.0;
         if (row.length > 2) {
@@ -1058,32 +1230,6 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
         icon: const Icon(Icons.arrow_back),
       ),
       title: Text('Transaction History'),
-      actions: [
-        Row(
-          children: [
-            Text(
-              _useLiveData ? 'Live' : 'Mock',
-              style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                color: AppTheme.lightTheme.colorScheme.onSurface,
-              ),
-            ),
-            Switch(
-              value: _useLiveData,
-              onChanged: (val) async {
-                setState(() {
-                  _useLiveData = val;
-                });
-                if (val) {
-                  await _fetchLiveTransactions();
-                } else {
-                  _loadMockData();
-                }
-              },
-              activeThumbColor: AppTheme.lightTheme.colorScheme.primary,
-            ),
-          ],
-        ),
-      ],
     );
   }
 

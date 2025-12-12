@@ -4,6 +4,7 @@ import 'package:sizer/sizer.dart';
 
 import 'core/app_export.dart';
 import 'services/settings_service.dart';
+import 'services/app_state.dart';
 import 'widgets/custom_error_widget.dart';
 
 void main() async {
@@ -71,7 +72,9 @@ class _MyAppState extends State<MyApp> {
     final scale = SettingsService.fontScaleNotifier.value;
     final fontFamily = SettingsService.fontFamilyNotifier.value;
 
-    return Sizer(builder: (context, orientation, screenType) {
+    return AppStateProvider(
+      appState: AppState(),
+      child: Sizer(builder: (context, orientation, screenType) {
       final baseLight = AppTheme.lightTheme;
       final baseDark = AppTheme.darkTheme;
 
@@ -105,6 +108,7 @@ class _MyAppState extends State<MyApp> {
         routes: AppRoutes.routes,
         initialRoute: AppRoutes.initial,
       );
-    });
+      }),
+    );
   }
 }

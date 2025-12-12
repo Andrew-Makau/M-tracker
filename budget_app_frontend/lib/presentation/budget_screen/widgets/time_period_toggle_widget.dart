@@ -34,6 +34,33 @@ class TimePeriodToggleWidget extends StatelessWidget {
                 children: [
                   Expanded(
                     child: GestureDetector(
+                      onTap: () => onPeriodChanged('daily'),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: EdgeInsets.symmetric(vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: selectedPeriod == 'daily'
+                              ? AppTheme.lightTheme.colorScheme.secondary
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Daily',
+                            style: AppTheme.lightTheme.textTheme.titleSmall
+                                ?.copyWith(
+                              color: selectedPeriod == 'daily'
+                                  ? Colors.white
+                                  : AppTheme.lightTheme.colorScheme.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: GestureDetector(
                       onTap: () => onPeriodChanged('weekly'),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),

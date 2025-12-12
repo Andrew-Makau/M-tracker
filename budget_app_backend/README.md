@@ -23,9 +23,13 @@ Activate it:
   ```bash
   source venv/bin/activate
   ```
-- Windows:
+- Windows (Command Prompt/PowerShell):
   ```bash
   venv\Scripts\activate
+  ```
+- Windows (Git Bash/MINGW):
+  ```bash
+  source venv/Scripts/activate
   ```
 
 ### 3. Install Dependencies

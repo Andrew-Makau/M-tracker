@@ -2,9 +2,9 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sizer/sizer.dart';
+import 'dart:ui';
 
 import '../../core/app_export.dart';
-import '../../widgets/brand_app_bar.dart';
 import '../../services/transaction_service.dart';
 
 // Palette constants (matching dashboard design system)
@@ -216,93 +216,93 @@ class _AddExpenseScreenState extends State<AddExpenseScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBaseBackground,
-      body: SlideTransition(
-        position: _slideAnimation,
-        child: SafeArea(
-            child: Column(
-              children: [
-                // Use BrandAppBar for consistent app theming
-                BrandAppBar(
-                  backgroundColor: Colors.white,
-                  elevation: 2,
-                  leading: IconButton(
-                    onPressed: _closeScreen,
-                    icon: CustomIconWidget(
-                      iconName: 'close',
-                      color: AppTheme.lightTheme.colorScheme.onSurface,
-                      size: 6.w,
-                    ),
-                  ),
-                  title: Column(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          // Gradient background
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF29A385).withOpacity(0.85),
+                    const Color(0xFF0EA5E9).withOpacity(0.7),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: 4.w),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        transactionType == 'income' ? 'Add Income' : 'Add Expense',
-                        style: AppTheme.lightTheme.textTheme.headlineSmall?.copyWith(
-                          color: AppTheme.lightTheme.colorScheme.onSurface,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      Text(
-                        transactionType == 'income' ? 'Record incoming money' : 'Track your spending',
-                        style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                  actions: [
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
-                      decoration: BoxDecoration(
-                        color: AppTheme.lightTheme.colorScheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                      SizedBox(height: 2.h),
+                      // Header with back button
+                      Row(
                         children: [
-                          CustomIconWidget(
-                            iconName: 'today',
-                            color: AppTheme.lightTheme.colorScheme.primary,
-                            size: 4.w,
-                          ),
-                          SizedBox(width: 1.w),
-                          Text(
-                            '${selectedDate.month}/${selectedDate.day}',
-                            style: AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
-                              color: AppTheme.lightTheme.colorScheme.primary,
-                              fontWeight: FontWeight.w600,
+                          GestureDetector(
+                            onTap: _closeScreen,
+                            child: Container(
+                              padding: EdgeInsets.all(2.w),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.arrow_back,
+                                color: Colors.white,
+                                size: 24,
+                              ),
                             ),
+                          ),
+                          SizedBox(width: 3.w),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                transactionType == 'income' ? 'Add Income' : 'Add Expense',
+                                style: TextStyle(
+                                  fontSize: 22.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                transactionType == 'income'
+                                    ? 'Record your earnings'
+                                    : 'Track your spending',
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: Colors.white.withOpacity(0.8),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(horizontal: 4.w),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 2.h),
-                          Container(
+                      SizedBox(height: 3.h),
+                      // Form card
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: Container(
                             padding: EdgeInsets.all(4.w),
                             decoration: BoxDecoration(
-                              color: kCard,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: kBorder, width: 1),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.10),
-                                  blurRadius: 3.0,
-                                  spreadRadius: 0.0,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
+                              color: Colors.white.withOpacity(0.95),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.2),
+                                width: 1.5,
+                              ),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -622,15 +622,16 @@ class _AddExpenseScreenState extends State<AddExpenseScreen>
                               ],
                             ),
                           ),
-                          SizedBox(height: 10.h), // Space for floating button
-                        ],
+                        ),
                       ),
-                    ),
+                      SizedBox(height: 10.h), // Space for floating button
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-        ),
+          ),
+        ],
       ),
       floatingActionButton: _buildSaveButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,

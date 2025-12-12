@@ -312,7 +312,7 @@ class AppBottomNavWrapper extends StatelessWidget {
             Navigator.pushNamed(context, '/transaction-history-screen');
             break;
           case 2:
-            Navigator.pushNamed(context, '/budget-categories-screen');
+            Navigator.pushNamed(context, '/budget-screen');
             break;
           case 3:
             // current screen

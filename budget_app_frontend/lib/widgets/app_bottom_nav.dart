@@ -31,6 +31,7 @@ class AppBottomNav extends StatelessWidget {
               _buildNavItem(context, Icons.receipt_long_outlined, 'Transactions', 1),
               _buildNavItem(context, Icons.account_balance_wallet_outlined, 'Budget', 2),
               _buildNavItem(context, Icons.bar_chart_outlined, 'Reports', 3),
+              _buildNavItem(context, Icons.flag_outlined, 'Goals', 4),
             ],
           ),
         ),

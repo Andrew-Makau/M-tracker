@@ -18,7 +18,8 @@ class SocialRegistrationButtons extends StatelessWidget {
           Text(
             'Sign up with',
             style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-              color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+              color: const Color(0xFF475569),
+              fontSize: 16.sp,
             ),
           ),
         SizedBox(height: ultraCompact ? 1.2.h : (compact ? 2.h : 3.h)),
@@ -30,7 +31,7 @@ class SocialRegistrationButtons extends StatelessWidget {
               iconName: 'google',
               label: 'Google',
               onTap: () => _handleGoogleSignUp(context),
-              backgroundColor: Theme.of(context).colorScheme.onPrimary,
+              backgroundColor: Colors.white,
               textColor: Colors.black87,
               showLabel: !ultraCompact,
             ),
@@ -39,8 +40,8 @@ class SocialRegistrationButtons extends StatelessWidget {
               iconName: 'apple',
               label: 'Apple',
               onTap: () => _handleAppleSignUp(context),
-              backgroundColor: Colors.black,
-              textColor: Theme.of(context).colorScheme.onPrimary,
+              backgroundColor: Colors.white,
+              textColor: Colors.black87,
               showLabel: !ultraCompact,
             ),
             _buildSocialButton(
@@ -48,8 +49,8 @@ class SocialRegistrationButtons extends StatelessWidget {
               iconName: 'facebook',
               label: 'Facebook',
               onTap: () => _handleFacebookSignUp(context),
-              backgroundColor: const Color(0xFF1877F2),
-              textColor: Theme.of(context).colorScheme.onPrimary,
+              backgroundColor: Colors.white,
+              textColor: Colors.black87,
               showLabel: !ultraCompact,
             ),
           ],
@@ -59,8 +60,7 @@ class SocialRegistrationButtons extends StatelessWidget {
           children: [
             Expanded(
               child: Divider(
-                color: AppTheme.lightTheme.colorScheme.outline
-                    .withValues(alpha: 0.3),
+                color: const Color(0xFFE0E5EB),
                 thickness: 1,
               ),
             ),
@@ -69,14 +69,14 @@ class SocialRegistrationButtons extends StatelessWidget {
               child: Text(
                 'or',
                 style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                  color: const Color(0xFF475569),
+                  fontSize: 16.sp,
                 ),
               ),
             ),
             Expanded(
               child: Divider(
-                color: AppTheme.lightTheme.colorScheme.outline
-                    .withValues(alpha: 0.3),
+                color: const Color(0xFFE0E5EB),
                 thickness: 1,
               ),
             ),
@@ -104,20 +104,12 @@ class SocialRegistrationButtons extends StatelessWidget {
         width: 25.w,
         height: ultraCompact ? 4.4.h : (compact ? 5.h : 6.h),
         decoration: BoxDecoration(
-          color: backgroundColor ?? AppTheme.lightTheme.colorScheme.surface.withValues(alpha: 0.8),
-          borderRadius: BorderRadius.circular(16),
+          color: backgroundColor ?? Colors.white,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.25),
-            width: 1,
+            color: const Color(0xFFE0E5EB),
+            width: 1.5,
           ),
-          boxShadow: [
-            BoxShadow(
-              color:
-                  AppTheme.lightTheme.colorScheme.shadow.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -125,7 +117,7 @@ class SocialRegistrationButtons extends StatelessWidget {
             CustomIconWidget(
               iconName: iconName,
               size: ultraCompact ? 20 : 24,
-              color: textColor ?? AppTheme.lightTheme.colorScheme.onSurface,
+              color: textColor ?? Colors.black87,
             ),
             if (showLabel) ...[
               SizedBox(height: compact ? 0.3.h : 0.5.h),
@@ -134,8 +126,9 @@ class SocialRegistrationButtons extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTheme.lightTheme.textTheme.labelSmall?.copyWith(
-                  color: textColor ?? AppTheme.lightTheme.colorScheme.onSurface,
+                  color: textColor ?? Colors.black87,
                   fontWeight: FontWeight.w500,
+                  fontSize: 12.sp,
                 ),
               ),
             ],

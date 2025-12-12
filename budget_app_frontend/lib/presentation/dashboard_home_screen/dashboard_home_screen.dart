@@ -9,7 +9,7 @@ import '../../core/app_export.dart';
 // Removed gradient background for minimal/flat design
 import '../../core/design_tokens.dart';
 import '../../widgets/app_bottom_nav.dart';
-import '../../widgets/brand_app_bar.dart';
+import '../../services/app_state.dart';
 // import 'package:dot_curved_bottom_nav/dot_curved_bottom_nav.dart'; // enable after pub get
 import '../../services/transaction_service.dart';
 import '../../services/auth_service.dart';
@@ -153,6 +153,16 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(_handleTabSelection);
 
+    // Sync with global app state on init
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final appState = AppStateProvider.of(context);
+      if (appState != null && mounted) {
+        setState(() {
+          _useLiveData = appState.useLiveData;
+        });
+      }
+    });
+
     _refreshAnimationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
@@ -278,7 +288,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
 
   void _handleViewBudgets() {
     HapticFeedback.lightImpact();
-    Navigator.pushNamed(context, '/budget-categories-screen');
+    Navigator.pushNamed(context, '/budget-screen');
   }
 
   void _handleViewReports() {
@@ -290,12 +300,16 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
 
   void _toggleLiveData() {
     HapticFeedback.lightImpact();
-    setState(() {
-      _useLiveData = !_useLiveData;
-    });
-    if (_useLiveData) {
-      // Optionally kick off a refresh when switching to live
-      _handleRefresh();
+    final appState = AppStateProvider.of(context);
+    if (appState != null) {
+      appState.toggleLiveData();
+      setState(() {
+        _useLiveData = appState.useLiveData;
+      });
+      if (_useLiveData) {
+        // Optionally kick off a refresh when switching to live
+        _handleRefresh();
+      }
     }
   }
 
@@ -400,7 +414,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
     } else {
       formatted = absVal.toStringAsFixed(2);
     }
-    return isNegative ? '-\$${formatted}' : '\$${formatted}';
+    return isNegative ? '-\$$formatted' : '\$$formatted';
   }
 
   String _deriveNameFromEmail(String? email) {
@@ -423,33 +437,35 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
       appBar: BrandAppBar(
         backgroundColor: Colors.white,
         elevation: 2,
-        leading: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(width: 12),
-            SizedBox(
-              height: 34,
-              width: 34,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: kPrimary,
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                ),
-                child: Center(
-                  child: Icon(Icons.account_balance_wallet_outlined, color: Colors.white, size: 18),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: 34,
+                width: 34,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: kPrimary,
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                  ),
+                  child: Center(
+                    child: Icon(Icons.account_balance_wallet_outlined, color: Colors.white, size: 18),
+                  ),
                 ),
               ),
-            ),
-            SizedBox(width: 10),
-            Text(
-              'BudgetFlow',
-              style: TextStyle(
-                color: kBaseText,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
+              SizedBox(width: 10),
+              Text(
+                'BudgetFlow',
+                style: TextStyle(
+                  color: kBaseText,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         title: null,
         actions: [
@@ -463,7 +479,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
           IconButton(
             tooltip: 'Settings',
             icon: const Icon(Icons.settings, color: Colors.black),
-            onPressed: () => Navigator.pushNamed(context, '/profile-screen'),
+            onPressed: () => Navigator.pushNamed(context, '/settings-screen'),
           ),
           IconButton(
             tooltip: _useLiveData ? 'Live Data: ON' : 'Live Data: OFF',
@@ -479,106 +495,158 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
           ),
         ],
       ),
-      endDrawer: Drawer(
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            bottomLeft: Radius.circular(20),
-          ),
+      endDrawer: ClipRRect(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          bottomLeft: Radius.circular(20),
         ),
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme.secondary,
-                    ],
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Quick Actions',
-                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
-                ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.85,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFF29A385).withOpacity(0.85),
+                  const Color(0xFF0EA5E9).withOpacity(0.7),
+                ],
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: LayoutBuilder(builder: (context, constraints) {
-                    final double width = constraints.maxWidth;
-                    final int cols = width < 360 ? 2 : 3;
-                    return GridView.count(
-                      crossAxisCount: cols,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
+            ),
+            child: SafeArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Colors.white.withOpacity(0.2),
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _QuickActionButton(
+                        Text(
+                          'Quick Actions',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withOpacity(0.3),
+                                offset: const Offset(0, 2),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.close, color: Colors.white, size: 24),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.all(16.0),
+                      children: [
+                        _QuickActionListItem(
                           iconData: Icons.remove_circle_outline,
                           label: 'Add Expense',
-                          color: AppTheme.errorLight,
+                          subtitle: 'Record your spending',
+                          color: const Color(0xFFDC2828),
                           onTap: () {
                             Navigator.pop(context);
                             _handleAddExpense();
                           },
                         ),
-                        _QuickActionButton(
+                        const SizedBox(height: 12),
+                        _QuickActionListItem(
                           iconData: Icons.add_circle_outline,
                           label: 'Add Income',
-                          color: AppTheme.successLight,
+                          subtitle: 'Record your earnings',
+                          color: kPrimary,
                           onTap: () {
                             Navigator.pop(context);
                             _handleAddIncome();
                           },
                         ),
-                        _QuickActionButton(
+                        const SizedBox(height: 12),
+                        _QuickActionListItem(
                           iconData: Icons.receipt_long,
                           label: 'Recent Transactions',
-                          color: AppTheme.lightTheme.primaryColor,
+                          subtitle: 'View transaction history',
+                          color: const Color(0xFF3B82F6),
                           onTap: () {
                             Navigator.pop(context);
                             Navigator.pushNamed(context, '/transaction-history-screen');
                           },
                         ),
-                        _QuickActionButton(
+                        const SizedBox(height: 12),
+                        _QuickActionListItem(
+                          iconData: Icons.category_outlined,
+                          label: 'Categories',
+                          subtitle: 'Manage expense categories',
+                          color: const Color(0xFF06B6D4),
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.pushNamed(context, '/categories-screen');
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        _QuickActionListItem(
                           iconData: Icons.pie_chart_outline,
                           label: 'Budgets',
-                          color: AppTheme.categoryColors[2],
+                          subtitle: 'Manage your budgets',
+                          color: const Color(0xFF8B5CF6),
                           onTap: () {
                             Navigator.pop(context);
                             _handleViewBudgets();
                           },
                         ),
-                        _QuickActionButton(
+                        const SizedBox(height: 12),
+                        _QuickActionListItem(
                           iconData: Icons.bar_chart,
                           label: 'Reports',
-                          color: AppTheme.categoryColors[5],
+                          subtitle: 'View financial reports',
+                          color: const Color(0xFFF59E0B),
                           onTap: () {
                             Navigator.pop(context);
                             _handleViewReports();
                           },
                         ),
+                        const SizedBox(height: 12),
+                        _QuickActionListItem(
+                          iconData: Icons.flag_outlined,
+                          label: 'Goals',
+                          subtitle: 'Track financial goals',
+                          color: const Color(0xFFEC4899),
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.pushNamed(context, '/goals-screen');
+                          },
+                        ),
                       ],
-                    );
-                  }),
-                ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -628,7 +696,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
                                 ],
                               ),
                               GestureDetector(
-                                onTap: () => Navigator.pushNamed(context, '/profile-screen'),
+                                onTap: () => Navigator.pushNamed(context, '/settings-screen'),
                                 child: CircleAvatar(
                                   radius: 20,
                                   backgroundColor: kPrimary,
@@ -889,10 +957,13 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
               Navigator.pushNamed(context, '/transaction-history-screen');
               break;
             case 2:
-              Navigator.pushNamed(context, '/budget-categories-screen');
+              Navigator.pushNamed(context, '/budget-screen');
               break;
             case 3:
               Navigator.pushNamed(context, '/reports-screen');
+              break;
+            case 4:
+              Navigator.pushNamed(context, '/goals-screen');
               break;
           }
         },
@@ -926,9 +997,9 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
 
   String _greeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good Morning, ${_userName}!';
-    if (hour < 17) return 'Good Afternoon, ${_userName}!';
-    return 'Good Evening, ${_userName}!';
+    if (hour < 12) return 'Good Morning, $_userName!';
+    if (hour < 17) return 'Good Afternoon, $_userName!';
+    return 'Good Evening, $_userName!';
   }
 
   String _formattedDateTime() {
@@ -968,7 +1039,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen>
 }
 
 class _GlassBackground extends StatelessWidget {
-  const _GlassBackground({Key? key}) : super(key: key);
+  const _GlassBackground();
 
   @override
   Widget build(BuildContext context) {
@@ -1023,6 +1094,103 @@ class _GlassBackground extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _QuickActionListItem extends StatelessWidget {
+  final IconData iconData;
+  final String label;
+  final String subtitle;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _QuickActionListItem({
+    required this.iconData,
+    required this.label,
+    required this.subtitle,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1.5,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(iconData, color: Colors.white, size: 28),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black26,
+                              offset: Offset(0, 1),
+                              blurRadius: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.85),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.white.withOpacity(0.7),
+                  size: 18,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
